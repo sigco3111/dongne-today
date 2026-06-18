@@ -1,0 +1,21 @@
+{
+  "name": "dongne-today",
+  "displayName": "우리 동네 오늘",
+  "appName": "dongne-today",
+  "version": "0.1.0",
+  "description": "토스 앱인토스 바이브코딩 챌린지 출품작 — 우리 동네의 오늘을 6가지 데이터로 한눈에",
+  "author": "sigco3111",
+  "license": "MIT",
+  "platforms": ["ios", "android"],
+  "icon": "./assets/icon.png",
+  "splash": {
+    "image": "./assets/splash.png",
+    "backgroundColor": "#3182F6"
+  },
+  "challenge": {
+    "name": "6월 바이브코딩 챌린지 | 일상이 편해지는 순간",
+    "submissionDeadline": "2026-06-30T23:59:59+09:00",
+    "platform": "apps-in-toss",
+    "url": "https://toss.im/apps-in-toss/blog/2606_vibecoding_challenge"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "name": "dongne-today",
+  "version": "0.1.0",
+  "description": "토스 앱인토스 바이브코딩 챌린지 출품작 — 우리 동네 오늘 (DongNe Today)",
+  "private": true,
+  "license": "MIT",
+  "author": "sigco3111",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sigco3111/dongne-today.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sigco3111/dongne-today/issues"
+  },
+  "keywords": [
+    "toss",
+    "apps-in-toss",
+    "granite",
+    "react-native",
+    "vibe-coding",
+    "challenge",
+    "mini-app",
+    "neighborhood",
+    "weather"
+  ],
+  "engines": {
+    "node": ">=20",
+    "yarn": ">=4"
+  },
+  "packageManager": "yarn@4.5.0",
+  "scripts": {
+    "dev": "granite dev",
+    "build": "granite build",
+    "start": "granite start",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint .",
+    "clean": "rm -rf dist node_modules .yarn/cache"
+  },
+  "dependencies": {
+    "@apps-in-toss/framework": "^2.9.1",
+    "@apps-in-toss/native-modules": "^2.9.1",
+    "@toss/tds-react-native": "^2.x",
+    "react": "^18.3.1",
+    "react-native": "^0.74.5",
+    "react-native-gifted-charts": "^1.4.10",
+    "react-native-svg": "^15.0.0",
+    "react-native-view-shot": "^3.8.0"
+  },
+  "devDependencies": {
+    "@apps-in-toss/cli": "^2.9.1",
+    "@granite-js/react-native": "^0.x",
+    "@types/react": "^18.3.0",
+    "typescript": "^5.4.0"
+  }
+}
