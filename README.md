@@ -2,10 +2,12 @@
 
 > **토스 앱인토스 바이브코딩 챌린지 출품작** — "일상이 편해지는 순간"을 만드는 동네 컨디션 리포트 미니앱
 
-[![Apps in Toss Challenge](https://img.shields.io/badge/Apps%20in%20Toss-June%202026%20Challenge-3182F6)](https://toss.im/apps-in-toss/blog/2606_vibecoding_challenge)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
-[![No Backend](https://img.shields.io/badge/Backend-None-success)](./docs/ARCHITECTURE.md)
-[![No API Key](https://img.shields.io/badge/API%20Key-Not%20Required-success)](./docs/DATA_SOURCES.md)
+[![Apps in Toss Challenge](https://img.shields.io/badge/Apps%20in%20Toss-Granite%20Hackathon-3182F6?style=for-the-badge&logo=toss&logoColor=white)](https://toss.im/apps-in-toss/blog/2606_vibecoding_challenge)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](./LICENSE)
+[![No Backend](https://img.shields.io/badge/Backend-None-success?style=flat-square)](./docs/ARCHITECTURE.md)
+[![No API Key](https://img.shields.io/badge/API%20Key-Not%20Required-success?style=flat-square)](./docs/DATA_SOURCES.md)
+[![TypeScript](https://img.shields.io/badge/TypeScript-100%25-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![No Build Step](https://img.shields.io/badge/Build-Zero--Config-FF6B35?style=flat-square)]()
 
 [🇰🇷 한국어](#-한국어) · [🇺🇸 English](#-english)
 
