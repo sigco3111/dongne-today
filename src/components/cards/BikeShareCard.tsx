@@ -10,6 +10,7 @@ import { Txt, colors } from '@toss/tds-react-native';
 import { PieChart } from 'react-native-gifted-charts';
 import type { BikeShareData } from '../../types';
 import { formatPercent, formatDistance } from '../../utils/format';
+import { Card } from '../common/Card';
 
 interface Props {
   data: BikeShareData;
@@ -31,7 +32,7 @@ export function BikeShareCard({ data, style }: Props) {
   ];
 
   return (
-    <View style={[styles.card, style]}>
+    <Card style={style}>
       <Txt typography="st1" fontWeight="medium" color={colors.grey900}>
         🚴 따릉이
       </Txt>
@@ -63,17 +64,11 @@ export function BikeShareCard({ data, style }: Props) {
           )}
         </View>
       </View>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.background,
-    borderRadius: 16,
-    padding: 16,
-    gap: 8,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

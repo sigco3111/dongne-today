@@ -12,6 +12,7 @@ import { LineChart } from 'react-native-gifted-charts';
 import type { WeatherData } from '../../types';
 import { getWeatherLabel } from '../../services/api/weather';
 import { formatHourShort, formatTemp } from '../../utils/format';
+import { Card } from '../common/Card';
 
 interface Props {
   data: WeatherData;
@@ -29,7 +30,7 @@ export function WeatherCard({ data, style }: Props) {
   const currentTemp = data.current.temperature_2m;
 
   return (
-    <View style={[styles.card, style]}>
+    <Card style={style}>
       <View style={styles.header}>
         <Txt typography="st1" fontWeight="medium" color={colors.grey900}>
           🌤️ 오늘 날씨
@@ -67,17 +68,11 @@ export function WeatherCard({ data, style }: Props) {
         isAnimated
         animationDuration={600}
       />
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.background,
-    borderRadius: 16,
-    padding: 16,
-    gap: 8,
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

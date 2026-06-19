@@ -97,23 +97,42 @@ export function HomeScreen({ onOpenSettings }: Props) {
 
   return (
     <View style={styles.container}>
-      <Top
+<Top
         title="우리 동네 오늘"
         right={
           <View style={styles.topRight}>
-            <Button type="primary" style="weak" onPress={handleShare}>
+            <Button
+              type="primary"
+              style="weak"
+              onPress={handleShare}
+              accessibilityLabel="대시보드 공유"
+              accessibilityRole="button"
+            >
               공유
             </Button>
-            <Button type="primary" style="weak" onPress={handleRefresh} disabled={refreshing}>
+            <Button
+              type="primary"
+              style="weak"
+              onPress={handleRefresh}
+              disabled={refreshing}
+              accessibilityLabel="데이터 새로고침"
+              accessibilityRole="button"
+            >
               {refreshing ? '...' : '새로고침'}
             </Button>
-            <Button type="primary" style="weak" onPress={onOpenSettings}>
+            <Button
+              type="primary"
+              style="weak"
+              onPress={onOpenSettings}
+              accessibilityLabel="설정 열기"
+              accessibilityRole="button"
+            >
               설정
             </Button>
           </View>
         }
       />
-      <Dashboard data={data} />
+      <Dashboard data={data} onRefresh={handleRefresh} refreshing={refreshing} />
     </View>
   );
 }

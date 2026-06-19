@@ -11,6 +11,7 @@ import { Txt, colors } from '@toss/tds-react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import type { WeatherData, FriendNeighborhood } from '../../types';
 import { formatTemp } from '../../utils/format';
+import { Card } from '../common/Card';
 
 interface Props {
   myWeather: WeatherData;
@@ -36,7 +37,7 @@ export function CompareCard({ myWeather, myNeighborhood, friendsWeather }: Props
   ];
 
   return (
-    <View style={styles.card}>
+    <Card>
       <Txt typography="st1" fontWeight="medium" color={colors.grey900}>
         👥 친구 동네 비교
       </Txt>
@@ -65,17 +66,11 @@ export function CompareCard({ myWeather, myNeighborhood, friendsWeather }: Props
           animationDuration={600}
         />
       )}
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.background,
-    borderRadius: 16,
-    padding: 16,
-    gap: 8,
-  },
   empty: {
     paddingVertical: 24,
     textAlign: 'center',

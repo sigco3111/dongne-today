@@ -9,6 +9,7 @@ import { View, StyleSheet } from 'react-native';
 import { Txt, colors, Badge } from '@toss/tds-react-native';
 import type { HolidayData } from '../../types';
 import { formatDaysUntil } from '../../utils/format';
+import { Card } from '../common/Card';
 
 interface Props {
   data: HolidayData;
@@ -18,7 +19,7 @@ interface Props {
 export function HolidayCard({ data, style }: Props) {
   const isToday = data.isHoliday;
   return (
-    <View style={[styles.card, style]}>
+    <Card style={style}>
       <Txt typography="st1" fontWeight="medium" color={colors.grey900}>
         🎭 공휴일
       </Txt>
@@ -44,17 +45,11 @@ export function HolidayCard({ data, style }: Props) {
           )}
         </View>
       )}
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.background,
-    borderRadius: 16,
-    padding: 16,
-    gap: 8,
-  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Txt, colors } from '@toss/tds-react-native';
+import { Txt, colors, useShadow } from '@toss/tds-react-native';
 import type { CharacterReport as CharacterReportType } from '../../types';
 
 interface Props {
@@ -16,8 +16,14 @@ interface Props {
 }
 
 export function CharacterReport({ character, neighborhoodName }: Props) {
+  const shadow = useShadow({
+    color: colors.blue500,
+    opacity: 0.1,
+    radius: 16,
+    offset: { x: 0, y: 6 },
+  });
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, shadow]}>
       <Txt typography="st3" color={colors.grey700}>
         📍 {neighborhoodName}
       </Txt>
@@ -26,7 +32,11 @@ export function CharacterReport({ character, neighborhoodName }: Props) {
           {character.emoji}
         </Txt>
         <View style={styles.text}>
-          <Txt typography="t2" fontWeight="bold" color={colors.grey900}>
+          <Txt
+            typography="t2"
+            fontWeight="bold"
+            color={colors.grey900}
+          >
             {character.line}
           </Txt>
           <Txt typography="st2" color={colors.grey700}>
@@ -43,7 +53,7 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: colors.background,
     borderRadius: 16,
-    gap: 8,
+    gap: 10,
   },
   row: {
     flexDirection: 'row',

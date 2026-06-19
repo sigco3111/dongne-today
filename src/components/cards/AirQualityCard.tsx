@@ -12,6 +12,7 @@ import { PieChart } from 'react-native-gifted-charts';
 import type { AirQualityData } from '../../types';
 import { AIR_QUALITY_LABEL } from '../../services/api/airQuality';
 import { formatPm } from '../../utils/format';
+import { Card } from '../common/Card';
 
 interface Props {
   data: AirQualityData;
@@ -36,7 +37,7 @@ export function AirQualityCard({ data, style }: Props) {
   ];
 
   return (
-    <View style={[styles.card, style]}>
+    <Card style={style}>
       <Txt typography="st1" fontWeight="medium" color={colors.grey900}>
         🌫️ 미세먼지
       </Txt>
@@ -63,17 +64,11 @@ export function AirQualityCard({ data, style }: Props) {
           </Txt>
         </View>
       </View>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.background,
-    borderRadius: 16,
-    padding: 16,
-    gap: 8,
-  },
   gaugeRow: {
     flexDirection: 'row',
     alignItems: 'center',

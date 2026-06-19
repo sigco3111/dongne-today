@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
 import { colors } from '@toss/tds-react-native';
 import type { DashboardData } from '../../types';
 import { CharacterReport } from './CharacterReport';
@@ -19,14 +19,24 @@ import { CompareCard } from '../cards/CompareCard';
 interface Props {
   data: DashboardData;
   onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
-export function Dashboard({ data }: Props) {
+export function Dashboard({ data, onRefresh, refreshing = false }: Props) {
   return (
     <ScrollView
       style={styles.scroll}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.blue500}
+          />
+        ) : undefined
+      }
     >
       <CharacterReport
         character={data.character}
