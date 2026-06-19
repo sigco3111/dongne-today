@@ -11,6 +11,7 @@ import { storage } from '../services/storage';
 import { getDashboard } from '../services/api';
 import { Dashboard } from '../components/common/Dashboard';
 import { shareDashboardText, buildTossShareLink } from '../utils/shareLink';
+import { haptics } from '../utils/haptics';
 import type { DashboardData, FriendNeighborhood, Neighborhood } from '../types';
 
 interface Props {
@@ -58,15 +59,20 @@ export function HomeScreen({ onOpenSettings }: Props) {
 
   async function handleRefresh() {
     setRefreshing(true);
+    void haptics.tick();
     await storage.clearCache();
     await load();
+    void haptics.success();
   }
 
   async function handleShare() {
     if (!data) return;
     try {
+      void haptics.tap();
       await shareDashboardText(data);
+      void haptics.success();
     } catch (e) {
+      void haptics.error();
       Alert.alert('공유 실패', '공유 기능을 사용할 수 없어요.');
     }
   }
