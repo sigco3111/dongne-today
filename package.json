@@ -34,7 +34,8 @@
     "start": "granite start",
     "type-check": "tsc --noEmit",
     "lint": "eslint .",
-    "clean": "rm -rf dist node_modules .yarn/cache yarn.lock"
+    "verify": "rm -rf /tmp/verify-build && mkdir -p /tmp/verify-build && tsc scripts/verify-engine.ts --target ES2020 --module commonjs --moduleResolution node --esModuleInterop --strict --skipLibCheck --rootDir . --outDir /tmp/verify-build && sed -i '' 's|require(\"../../src/|require(\"/tmp/verify-build/src/|g' /tmp/verify-build/scripts/verify-engine.js && node /tmp/verify-build/scripts/verify-engine.js",
+    "clean": "rm -rf dist node_modules .yarn/cache yarn.lock /tmp/verify-build"
   },
   "dependencies": {
     "@apps-in-toss/framework": "1.5.2",
