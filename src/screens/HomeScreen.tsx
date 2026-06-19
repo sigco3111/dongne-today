@@ -87,9 +87,12 @@ export function HomeScreen({ onOpenSettings }: Props) {
   if (loading || !data) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator />
+        <ActivityIndicator size="large" color={colors.blue500} />
         <Txt typography="st2" color={colors.grey500}>
           동네 정보 가져오는 중...
+        </Txt>
+        <Txt typography="st3" color={colors.grey400} style={styles.loadingHint}>
+          날씨 · 미세먼지 · 따릉이 · 공휴일 6종 데이터
         </Txt>
       </View>
     );
@@ -152,6 +155,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 12,
+    backgroundColor: colors.background,
+    padding: 24,
+  },
+  loadingHint: {
+    marginTop: 4,
+    textAlign: 'center',
   },
   topRight: {
     flexDirection: 'row',
