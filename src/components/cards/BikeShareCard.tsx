@@ -56,13 +56,9 @@ export function BikeShareCard({ data, style }: Props) {
           <Txt typography="st3" color={colors.grey500}>
             총 {data.totalStations}개소
           </Txt>
-          {data.nearest && (
+          {data.nearest && data.nearest.distance !== undefined && (
             <Txt typography="st3" color={colors.grey700}>
-              가장 가까운 정류소{' '}
-              {formatDistance(
-                // distance는 BikeShareData에 없으므로 표시 생략
-                0,
-              )}
+              {data.nearest.stationName} · {formatDistance(data.nearest.distance)}
             </Txt>
           )}
         </View>

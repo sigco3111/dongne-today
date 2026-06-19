@@ -68,9 +68,9 @@ export const bikeShare = {
     const nearest = stations
       .map((s) => ({
         ...s,
-        distance: haversine(coords, { lat: s.latitude, lon: s.longitude }),
+        distance: haversine(coords, { lat: s.latitude, lon: s.longitude }) * 1000,
       }))
-      .sort((a, b) => a.distance - b.distance)[0];
+      .sort((a, b) => (a.distance ?? 0) - (b.distance ?? 0))[0];
 
     return {
       averageAvailable: Math.round(averageAvailable),

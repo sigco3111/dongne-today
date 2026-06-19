@@ -51,6 +51,8 @@ export interface BikeShareStation {
   /** 위경도 */
   latitude: number;
   longitude: number;
+  /** 사용자 좌표로부터의 거리 (m) — 옵션 */
+  distance?: number;
 }
 
 export interface BikeShareData {
