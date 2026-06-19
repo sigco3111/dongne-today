@@ -52,44 +52,51 @@
 
 ---
 
-## 🧩 컴포넌트 구조
+## 🧩 컴포넌트 구조 (2026-06-19 기준 실제 구현)
 
 ```
 src/
-├── App.tsx                          # 루트, Granite Router 설정
+├── _app.tsx                          # Granite 진입점 (AppsInToss.registerApp + TDSProvider + ErrorBoundary)
 ├── screens/
-│   ├── HomeScreen.tsx               # 메인 대시보드 (2x3 카드)
-│   ├── OnboardingScreen.tsx         # 첫 실행: 위치 권한 + 동네 인식
-│   └── SettingsScreen.tsx           # 친구 동네 추가/수정
+│   ├── HomeScreen.tsx                # 메인 대시보드 (2x3 카드 + 공유/새로고침/설정 + 햅틱)
+│   ├── OnboardingScreen.tsx          # 첫 실행: 위치 권한 + 자동 인식 + 수동 입력 fallback
+│   └── SettingsScreen.tsx            # 우리 동네 변경 + 친구 동네 추가/삭제
 ├── components/
 │   ├── cards/
-│   │   ├── WeatherCard.tsx          # 🌤️ 라인 차트 + 현재 기온
-│   │   ├── AirQualityCard.tsx       # 🌫️ 게이지 + 캐릭터 표정
-│   │   ├── BikeShareCard.tsx        # 🚴 도넛 + 가용률
-│   │   ├── HolidayCard.tsx          # 🎭 배지 + 공휴일 표시
-│   │   └── CompareCard.tsx          # 👥 친구 동네 막대 비교
+│   │   ├── WeatherCard.tsx           # 🌤️ 라인 차트 (LineChart) + 현재 기온 + 라벨
+│   │   ├── AirQualityCard.tsx        # 🌫️ 도넛 (PieChart) + 등급 라벨
+│   │   ├── BikeShareCard.tsx         # 🚴 도넛 (PieChart) + 평균 가용률 + 가장 가까운 정류소
+│   │   ├── HolidayCard.tsx           # 🎭 Badge (TDS) + 다음 공휴일 D-N
+│   │   └── CompareCard.tsx           # 👥 막대 (BarChart) + 우리 + 친구 동네
 │   ├── common/
-│   │   ├── Dashboard.tsx            # 2x3 카드 그리드
-│   │   ├── CharacterReport.tsx      # MBTI 캐릭터 + 한 줄
-│   │   └── TDSChart.tsx             # 차트 래퍼
+│   │   ├── Dashboard.tsx             # 2x3 그리드 레이아웃 (ScrollView)
+│   │   ├── CharacterReport.tsx       # MBTI 캐릭터 헤더 (이모지 + 한 줄)
+│   │   └── ErrorBoundary.tsx         # 클래스형 에러 바운더리 (TDS fallback)
 │   └── modals/
-│       └── NeighborhoodPicker.tsx   # 동네 검색/선택
+│       └── NeighborhoodPicker.tsx    # 주소 검색/선택 모달 (Geocoding API)
 ├── services/
 │   ├── api/
-│   │   ├── weather.ts               # Open-Meteo 호출 + 타입
-│   │   ├── airQuality.ts            # 미세먼지 호출 + 타입
-│   │   ├── bikeShare.ts             # 따릉이 호출 + 타입
-│   │   ├── holidays.ts              # 공휴일 호출 + 타입
-│   │   └── geocoding.ts             # 주소/좌표 변환
-│   ├── storage.ts                   # 토스 storage 래퍼
-│   └── location.ts                  # getCurrentLocation 래퍼
+│   │   ├── weather.ts                # Open-Meteo Forecast + weather_code 라벨 매핑
+│   │   ├── airQuality.ts             # Open-Meteo AQ + PM2.5 → 등급 분류
+│   │   ├── bikeShare.ts              # 서울 따릉이 (paginated) + 평균 가용률 + nearest
+│   │   ├── holidays.ts               # Nager Date (올해+내년) + 다음 공휴일까지 D-day
+│   │   ├── geocoding.ts              # Open-Meteo Geocoding forward + Nominatim reverse (1초 throttle)
+│   │   └── index.ts                  # fetchAllData + getDashboard (30분 캐시 + fallback)
+│   ├── storage.ts                    # 토스 Storage typed 래퍼 (JSON 직렬화 + 캐시 헬퍼)
+│   └── location.ts                   # getCurrentLocation + reverse geocode 조합
 ├── utils/
-│   ├── characterEngine.ts           # MBTI 캐릭터 결정 룰
-│   ├── shareLink.ts                 # 토스 share 링크 생성
-│   └── format.ts                    # 날짜/숫자 포맷
+│   ├── characterEngine.ts            # 6종 MBTI 캐릭터 결정 (시간 의존, 우선순위 룰)
+│   ├── format.ts                     # 온도/시간/거리/날짜/percent 포맷
+│   ├── shareLink.ts                  # 토스 share({ message }) + getTossShareLink
+│   └── haptics.ts                    # generateHapticFeedback 래퍼 (tap/success/error/tick/wiggle)
 └── types/
-    └── index.ts                     # 전역 타입
+    └── index.ts                      # Neighborhood, WeatherData, AirQualityData, BikeShareData, HolidayData, CharacterReport, DashboardData, CachedReport, StorageKeys
+
+scripts/
+└── verify-engine.ts                  # 캐릭터 엔진 + 포맷 유틸 단위 테스트 (jest 없이 assert 사용)
 ```
+
+**진입점 컨벤션**: Granite은 `src/_app.tsx` (underscore prefix 필수). `_app.tsx`가 없으면 "Could not resolve src/_app.tsx" 에러.
 
 ---
 
@@ -174,29 +181,42 @@ async function getCachedOrFetch() {
 
 ---
 
-## 🎨 디자인 시스템 (TDS)
+## 🎨 디자인 시스템 (TDS) — 실제 사용 API
 
 토스 앱인토스의 모든 비게임 미니앱은 **TDS (Toss Design System)** 사용이 검수 필수.
 
+> ⚠️ **docs/DESIGN_SYSTEM.md의 색상 코드는 outdated** — 실제 TDS 1.3.8은
+> `colors.grey900` (adaptive prefix 없음), `colors.background` 등 단순 키 사용.
+
 ```typescript
-// TDS 사용 예시
-import { Text, Button } from '@toss/tds-react-native';
+// 실제 TDS 1.3.8 사용 예시 (2026-06-19)
+import { Txt, Button, Top, colors } from '@toss/tds-react-native';
 
-<Text typography="t1" color="adaptiveGrey900">
+<Txt typography="t1" fontWeight="bold" color={colors.grey900}>
   우리 동네 오늘
-</Text>
+</Txt>
 
-<Button variant="primary" onPress={refresh}>
+<Button type="primary" onPress={refresh}>
   새로고침
 </Button>
+
+<Top
+  title="우리 동네 오늘"
+  right={<Button type="primary" style="weak">공유</Button>}
+/>
 ```
 
-**차트**: TDS에 전용 차트 컴포넌트가 없어서 React Native 차트 라이브러리 사용 권장:
-- `react-native-gifted-charts` (가볍고 TDS 톤과 어울림)
-- `victory-native` (기능 풍부)
-- `react-native-svg-charts` (커스텀 자유도 ↑)
+**실제 차트 라이브러리**:
+- `react-native-gifted-charts` 1.4.43 — LineChart, PieChart(donut), BarChart 사용
+- TDS 색상은 `colors.blue500`, `colors.grey900` 등을 차트 색상에 직접 전달
 
-**자세한 디자인 톤**: `docs/DESIGN_SYSTEM.md`
+**검수 시 주의** (TDS 위반):
+- ❌ 외부 폰트 (Pretendard 등) — TDS 폰트만
+- ❌ 외부 아이콘 세트 — 토스 토스페이스 이모지만
+- ❌ 그라데이션/3D 효과 과다
+- ❌ TDS 외 UI 컴포넌트 사용 (MUI, Chakra 등)
+
+**자세한 디자인 톤**: `docs/DESIGN_SYSTEM.md` (단, 색상 API는 outdated)
 
 ---
 
@@ -209,6 +229,20 @@ import { Text, Button } from '@toss/tds-react-native';
 | 알림 (선택) | `requestNotificationAgreement` | 출근길 알림 (선택적) |
 
 **UX**: 첫 화면에서 권한 요청 dialog → 거부해도 핵심 기능 동작 (수동 동네 입력 fallback).
+
+---
+
+## 🧪 테스트 (verify 스크립트)
+
+Jest 도입 없이 Node assert로 핵심 로직 단위 테스트 (`scripts/verify-engine.ts`).
+
+**실행**: `yarn verify` — 14 시나리오 자동 검증
+
+**커버리지**:
+- `characterEngine.decideCharacter`: 6종 캐릭터 + 우선순위 (시간 mock으로 COMMUTER_DONGNE 회피)
+- `format`: temp/percent/hourLabel/daysUntil/distance/relativeDate
+
+**확장 시**: 새 캐릭터/포맷 추가 시 verify 스크립트에도 케이스 추가.
 
 ---
 
