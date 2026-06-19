@@ -20,9 +20,15 @@ interface Props {
   data: DashboardData;
   onRefresh?: () => void;
   refreshing?: boolean;
+  onAddFriend?: () => void;
 }
 
-export function Dashboard({ data, onRefresh, refreshing = false }: Props) {
+export function Dashboard({
+  data,
+  onRefresh,
+  refreshing = false,
+  onAddFriend,
+}: Props) {
   return (
     <ScrollView
       style={styles.scroll}
@@ -57,6 +63,7 @@ export function Dashboard({ data, onRefresh, refreshing = false }: Props) {
         myWeather={data.weather}
         myNeighborhood={data.neighborhood.name}
         friendsWeather={data.friendsWeather}
+        onAddFriend={onAddFriend}
       />
     </ScrollView>
   );

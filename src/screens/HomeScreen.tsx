@@ -132,7 +132,12 @@ export function HomeScreen({ onOpenSettings }: Props) {
           </View>
         }
       />
-      <Dashboard data={data} onRefresh={handleRefresh} refreshing={refreshing} />
+      <Dashboard
+        data={data}
+        onRefresh={handleRefresh}
+        refreshing={refreshing}
+        onAddFriend={onOpenSettings}
+      />
     </View>
   );
 }

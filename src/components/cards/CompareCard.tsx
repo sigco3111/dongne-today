@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import { Txt, colors } from '@toss/tds-react-native';
 import { BarChart } from 'react-native-gifted-charts';
 import type { WeatherData, FriendNeighborhood } from '../../types';
@@ -20,9 +20,15 @@ interface Props {
     friend: FriendNeighborhood;
     weather: WeatherData;
   }>;
+  onAddFriend?: () => void;
 }
 
-export function CompareCard({ myWeather, myNeighborhood, friendsWeather }: Props) {
+export function CompareCard({
+  myWeather,
+  myNeighborhood,
+  friendsWeather,
+  onAddFriend,
+}: Props) {
   const data = [
     {
       value: myWeather.current.temperature_2m,
@@ -46,9 +52,24 @@ export function CompareCard({ myWeather, myNeighborhood, friendsWeather }: Props
       </Txt>
 
       {data.length === 1 ? (
-        <Txt typography="st2" color={colors.grey500} style={styles.empty}>
-          비교할 친구 동네를 추가해보세요.
-        </Txt>
+        <View style={styles.empty}>
+          <Txt typography="st2" color={colors.grey500}>
+            아직 비교할 친구 동네가 없어요
+          </Txt>
+          {onAddFriend && (
+            <Pressable
+              onPress={onAddFriend}
+              style={styles.cta}
+              hitSlop={8}
+              accessibilityRole="button"
+              accessibilityLabel="친구 동네 추가하기"
+            >
+              <Txt typography="st1" fontWeight="medium" color={colors.blue500}>
+                + 친구 동네 추가
+              </Txt>
+            </Pressable>
+          )}
+        </View>
       ) : (
         <BarChart
           data={data}
@@ -73,6 +94,11 @@ export function CompareCard({ myWeather, myNeighborhood, friendsWeather }: Props
 const styles = StyleSheet.create({
   empty: {
     paddingVertical: 24,
-    textAlign: 'center',
+    alignItems: 'center',
+    gap: 12,
+  },
+  cta: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
   },
 });
