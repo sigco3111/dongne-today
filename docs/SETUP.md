@@ -59,10 +59,34 @@ yarn --version  # 4.x.x
 yarn install
 ```
 
-⚠️ **첫 설치 시 npm 토큰 필요**:
-- `yarnrc.yml` 파일에 `npmAuthToken` 항목 있음
-- 토스 디자인 시스템 그룹 npm 계정의 토큰 입력
-- 토큰 발급: <https://tossmini-docs.toss.im/tds-react-native/setup-npm/>
+> ✅ **2025-10부터 TDS 패키지는 public npm** — npm 토큰 불필요.
+> 구버전 가이드의 `npmAuthToken` 설정은 outdated.
+> 자세한 내용: <https://tossmini-docs.toss.im/tds-react-native/start/>
+
+#### ⚠️ Yarn 4 + 상위 디렉토리에 package.json이 있는 경우
+
+상위 디렉토리에 `package.json`이 있으면 Yarn 4가 workspace로 인식해서
+`yarn install`이 실패할 수 있어요 (`nearest package directory doesn't seem
+to be part of the project`). 두 가지 해결책:
+
+**A. 상위 package.json에 workspaces 명시** (가장 흔한 케이스)
+```json
+// /path/to/parent/package.json
+{
+  "private": true,
+  "workspaces": ["dongne-today"]
+}
+```
+
+**B. 프로젝트 디렉토리를 격리된 위치로 이동**
+(상위 디렉토리 package.json을 건드리고 싶지 않을 때)
+
+**C. Yarn 4는 PnP 비호환 — RN은 node_modules 필요**
+
+`.yarnrc.yml`에 다음 줄 추가:
+```yaml
+nodeLinker: node-modules
+```
 
 ### 5단계: 개발 서버 실행
 

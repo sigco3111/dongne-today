@@ -10,12 +10,15 @@ node_modules/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+yarn.lock
 
 # Build output
 dist/
 build/
 *.tgz
 *.zip
+*.ait
+.granite/
 
 # Bundle artifacts
 .expo/
