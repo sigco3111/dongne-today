@@ -89,7 +89,7 @@ yarn dev
 
 **"Your neighborhood's today at a glance — compare with friends' neighborhoods too"**
 
-A mini-app running inside the Toss app that shows your current neighborhood's **today's condition (weather, fine dust, bike-share, public holidays, neighborhood comparison)** as an infographic dashboard, and expresses your neighborhood's personality through a **MBTI-style character report**.
+A mini-app running inside the Toss app that shows your current neighborhood's **today's condition (weather, fine dust, precipitation, public holidays, neighborhood comparison)** as an infographic dashboard, and expresses your neighborhood's personality through a **MBTI-style character report**.
 
 ### ✨ Core Features
 
@@ -97,7 +97,7 @@ A mini-app running inside the Toss app that shows your current neighborhood's **
 |---|---|---|---|
 | 1 | 🌤️ **Today's Weather** (24-hour hourly) | Line Chart | Open-Meteo (no key) |
 | 2 | 🌫️ **Fine Dust PM2.5/PM10** | Gauge + Character Expression | Open-Meteo Air Quality (no key) |
-| 3 | 🚴 **Bike-Share Availability** | Donut Chart | Seoul Open Data (no key) |
+| 3 | 🌧️ **Precipitation Probability + Amount** (24-hour hourly) | Line Chart | Open-Meteo (no key) |
 | 4 | 🎭 **Public Holiday Status** | Badge + Character Tone Shift | Nager Date API (no key) |
 | 5 | 📍 **Neighborhood District** | Auto-detect + Manual Adjust | Open-Meteo Geocoding (no key) |
 | 6 | 👥 **Friend Neighborhood Compare** | Horizontal Bar Comparison | User Input + Open-Meteo |
@@ -147,4 +147,4 @@ MIT License — see [LICENSE](./LICENSE) for details.
 
 ## 🙏 Credits
 
-Built with [Toss Granite Framework](https://granite.run/) · [Open-Meteo](https://open-meteo.com/) · [Seoul Open Data](https://data.seoul.go.kr/)
+Built with [Toss Granite Framework](https://granite.run/) · [Open-Meteo](https://open-meteo.com/) · [Nager Date](https://date.nager.at/) · [OpenStreetMap Nominatim](https://nominatim.org/)
