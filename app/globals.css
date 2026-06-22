@@ -1,4 +1,95 @@
-/* Phase 3 will replace this with @theme TDS tokens */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+/* ============================================
+   TDS Design Tokens (Toss Design System)
+   v4 CSS-first @theme block — no tailwind.config.ts
+   ============================================ */
+
+@theme {
+  /* Primary */
+  --color-tds-blue: #3182F6;
+  --color-tds-blue-light: #E8F3FF;
+  --color-tds-blue-dark: #1B6EE0;
+
+  /* Grey scale */
+  --color-tds-grey-50: #F9FAFB;
+  --color-tds-grey-100: #F2F4F6;
+  --color-tds-grey-200: #E5E8EB;
+  --color-tds-grey-400: #B0B8C1;
+  --color-tds-grey-500: #8B95A1;
+  --color-tds-grey-700: #4E5968;
+  --color-tds-grey-900: #191F28;
+
+  /* Status */
+  --color-tds-green: #03B26C;
+  --color-tds-yellow: #FFC342;
+  --color-tds-orange: #FF8A00;
+  --color-tds-red: #F04452;
+  --color-tds-purple: #8B5CF6;
+
+  /* Background / Foreground (light mode default) */
+  --color-tds-bg: #FFFFFF;
+  --color-tds-fg: #191F28;
+
+  /* Radius */
+  --radius-tds-sm: 8px;
+  --radius-tds-md: 12px;
+  --radius-tds-lg: 16px;
+  --radius-tds-xl: 24px;
+
+  /* Spacing (TDS scale) */
+  --spacing-tds-xs: 4px;
+  --spacing-tds-sm: 8px;
+  --spacing-tds-md: 12px;
+  --spacing-tds-lg: 16px;
+  --spacing-tds-xl: 24px;
+
+  /* Font (Pretendard via next/font — see app/layout.tsx) */
+  --font-tds-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  /* Font size (TDS scale) */
+  --text-tds-t1: 24px;
+  --text-tds-t2: 20px;
+  --text-tds-t3: 18px;
+  --text-tds-st1: 16px;
+  --text-tds-st2: 14px;
+  --text-tds-st3: 12px;
+}
+
+/* ============================================
+   Dark mode (auto)
+   ============================================ */
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-tds-bg: #191F28;
+    --color-tds-fg: #FFFFFF;
+    --color-tds-grey-50: #1E232B;
+    --color-tds-grey-100: #252B33;
+    --color-tds-grey-200: #2E343C;
+    --color-tds-grey-500: #6B7682;
+    --color-tds-grey-700: #B0B8C1;
+    --color-tds-grey-900: #FFFFFF;
+  }
+}
+
+/* ============================================
+   Base layer
+   ============================================ */
+
+@layer base {
+  html {
+    font-family: var(--font-tds-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  body {
+    background: var(--color-tds-bg);
+    color: var(--color-tds-fg);
+    line-height: 1.5;
+  }
+  *:focus-visible {
+    outline: 2px solid var(--color-tds-blue);
+    outline-offset: 2px;
+  }
+}
