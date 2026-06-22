@@ -69,3 +69,6 @@ Thumbs.db
 
 # Work logs (세션별 작업 메모는 추적하지만 임시 파일은 제외)
 docs/WORK_LOG.local.md
+
+# AI agent workspace metadata (OhMyOpenCode)
+.omo/
