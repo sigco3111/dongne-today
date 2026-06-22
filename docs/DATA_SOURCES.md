@@ -10,7 +10,7 @@
 |---|---|---|:---:|:---:|---|---|
 | 1 | 🌤️ 날씨 | Open-Meteo Forecast | ✅ | ✅ | < 200ms | 전세계 |
 | 2 | 🌫️ 미세먼지 | Open-Meteo Air Quality | ✅ | ✅ | < 200ms | 전세계 |
-| 3 | 🚴 따릉이 | Seoul Open Data | ✅ | ✅ | < 300ms | 서울 |
+| 3 | 🌧️ 강수 (Precipitation) | Open-Meteo Precipitation | ✅ | ✅ | < 300ms | 전국 |
 | 4 | 🎭 공휴일 | Nager Date | ✅ | ✅ | < 100ms | 100+ 국가 |
 | 5 | 📍 주소→좌표 | Open-Meteo Geocoding | ✅ | ✅ | < 200ms | 전세계 |
 | 6 | 📍 좌표→주소 | Nominatim Reverse | ✅ | ✅ | < 500ms | 전세계 |
@@ -159,62 +159,68 @@ interface AirQualityResponse {
 
 ---
 
-## 3️⃣ Seoul 따릉이 (Bike-Share)
+## 3️⃣ Open-Meteo Precipitation (강수확률 / 강수량)
 
 ### 엔드포인트
 ```
-http://openapi.seoul.go.kr:8088/{KEY}/json/bikeList/{START}/{END}/
+https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&daily=precipitation_sum,precipitation_probability_max&hourly=precipitation,precipitation_probability&forecast_days=7&timezone=Asia/Seoul
 ```
 
-**무키 호출**: `{KEY}` 위치에 `sample` 사용.
+### 파라미터
+| 파라미터 | 값 | 필수 |
+|---|---|---|
+| `latitude` | 위도 (예: 37.5665) | ✅ |
+| `longitude` | 경도 (예: 126.9780) | ✅ |
+| `daily` | `precipitation_sum,precipitation_probability_max` | ✅ |
+| `hourly` | `precipitation,precipitation_probability` | ✅ |
+| `forecast_days` | 1~16 (기본 7) | 선택 |
+| `timezone` | `Asia/Seoul` | ✅ |
 
 ### 호출 예시
 ```bash
-curl "http://openapi.seoul.go.kr:8088/sample/json/bikeList/1/5/"
+curl "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&daily=precipitation_sum,precipitation_probability_max&hourly=precipitation,precipitation_probability&forecast_days=7&timezone=Asia%2FSeoul"
 ```
 
-### 응답 예시
+### 응답 예시 (발췌)
 ```json
 {
-  "rentBikeStatus": {
-    "list_total_count": 5,
-    "RESULT": {"CODE": "INFO-000", "MESSAGE": "정상 처리되었습니다."},
-    "row": [
-      {
-        "rackTotCnt": "15",
-        "stationName": "102. 망원역 1번출구 앞",
-        "parkingBikeTotCnt": "6",
-        "shared": "40",
-        "stationLatitude": "37.55564880",
-        "stationLongitude": "126.91062927",
-        "stationId": "ST-4"
-      }
-    ]
+  "daily": {
+    "time": ["2026-06-22", "2026-06-23", ...],
+    "precipitation_sum": [0.0, 1.2, ...],
+    "precipitation_probability_max": [12, 45, ...]
+  },
+  "hourly": {
+    "time": ["2026-06-22T00:00", "2026-06-22T01:00", ...],
+    "precipitation": [0.0, 0.0, 0.2, ...],
+    "precipitation_probability": [3, 5, 10, ...]
   }
 }
 ```
 
-### 활용 전략
-- 우리 동네 중심 가장 가까운 따릉이 대여소 3~5개 찾기
-- 각 대여소의 `shared` 값 (가용률 %) 계산
-- 동네 전체 평균 가용률 → 도넛 차트
-
 ### TypeScript 타입
 ```typescript
-interface BikeStation {
-  stationId: string;
-  stationName: string;
-  rackTotCnt: number;          // 총 거치대
-  parkingBikeTotCnt: number;   // 현재 자전거 수
-  shared: number;              // 가용률 (%)
-  stationLatitude: number;
-  stationLongitude: number;
+interface PrecipitationResponse {
+  daily: {
+    time: string[];
+    precipitation_sum: number[]; // mm
+    precipitation_probability_max: number[]; // %
+  };
+  hourly: {
+    time: string[];
+    precipitation: number[]; // mm
+    precipitation_probability: number[]; // %
+  };
 }
 ```
 
+### 활용 전략
+- `PrecipitationCard` — 24시간 `precipitation_probability` 라인 차트 (시간별 강수확률)
+- `CharacterEngine` — E형 활동가 판정에 사용 (`todayProbabilityMax < 30 && todaySum < 1`)
+
 ### 주의
-- `sample` 키는 quota 작음 (일 100~500회). 정식 키 발급은 토스 콘솔 가이드 따름.
-- HTTP만 지원 (HTTPS는 미제공이지만 CORS는 OK)
+- Open-Meteo는 **무키, API 키 불필요**입니다.
+- CORS: `access-control-allow-origin: *` (클라이언트 fetch 가능)
+- Rate limit: 무료 사용권(공용)에 대해 실무적으로 약 **~10,000 req/day** 수준으로 관찰됨, 우리 앱 예상 사용량은 충분함.
 
 ---
 
@@ -343,12 +349,12 @@ curl "https://nominatim.openstreetmap.org/reverse?lat=37.4979&lon=127.0276&forma
 | API | 무료 한도 | 우리 사용량 (예상) | OK? |
 |---|---|---|---|
 | Open-Meteo | 600 req/min | < 10 req/min/user | ✅ |
-| Seoul 따릉이 (sample) | ~500/day | < 200/day | ⚠️ |
+| Open-Meteo Precipitation | ~10,000/day | < 200/day/user | ✅ |
 | Nager Date | 무제한 | 1 req/year | ✅ |
 | Open-Meteo Geocoding | 무제한 | < 5 req/session | ✅ |
 | Nominatim | 1 req/sec | 1 req/session | ✅ |
 
-**따릉이 sample quota 위험** → 챌린지 출품 후 토스 콘솔 가이드에 따라 정식 키 발급 권장.
+**Open-Meteo 무료 티어**: 600 req/min, ~10K req/day. 우리 앱 30분 캐시로 충분.
 
 ---
 

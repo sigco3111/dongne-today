@@ -69,9 +69,9 @@ colors.adaptiveYellow500 // #FFC342 (주의)
 │   └──────────┘  └──────────┘    │
 │                                 │
 │   ┌──────────┐  ┌──────────┐    │
-│   │ 🚴 따릉이  │  │ 🎭 공휴일  │    │
-│   │  [도넛]  │  │   [배지]  │    │
-│   │  65% 가용 │  │   평일     │    │
+│   │ 🌧️ 강수  │  │ 🎭 공휴일  │    │
+│   │  [라인]  │  │   [배지]  │    │
+│   │  24h 강수확률 │  │   평일     │    │
 │   └──────────┘  └──────────┘    │
 │                                 │
 │   ┌─────────────────────────┐   │
@@ -107,8 +107,8 @@ function decideCharacter(data: DashboardData): Character {
   if (data.holiday?.isHoliday) {
     return CHARACTERS.CULTURALIST;
   }
-  // 5순위: E형 활동가 (따릉이 가용률 50%↑)
-  if (data.bikeShare.averageAvailable >= 50) {
+  // 5순위: E형 활동가 (강수 조건으로 갱신: 낮은 강수확률 + 강수량 미미)
+  if (data.precipitation?.todayProbabilityMax < 30 && data.precipitation?.todaySum < 1 && data.weather.weather_code <= 3) {
     return CHARACTERS.E_ACTIVE;
   }
   // 6순위: 조용한 I형 (기본값)
@@ -120,7 +120,7 @@ function decideCharacter(data: DashboardData): Character {
 
 | 캐릭터 | 이모지 | 한 줄 리포트 예시 | 등장 조건 |
 |---|---|---|---|
-| **E형 활동가** | ☀️ | "우리 동네는 활동적인 E형 — 바깥에서 만나요!" | 따릉이 50%+ + 날씨 좋음 |
+| **E형 활동가** | ☀️ | "우리 동네는 활동적인 E형 — 바깥에서 만나요!" | 강수확률 < 30% && 강수량 < 1mm + 날씨 좋음 |
 | **조용한 I형** | 🌙 | "우리 동네는 차분한 I형 — 오늘은 집이 최고" | 기본값 |
 | **문화인** | 🎨 | "현충일 연휴! 우리 동네는 문화인 — 한강에서 만나요" | 공휴일 |
 | **출근러 동네** | 🚇 | "월요일 아침, 우리 동네는 출근러 — 화이팅!" | 평일 7-9시 |
@@ -220,17 +220,19 @@ const CHARACTERS = {
 }
 ```
 
-#### 🚴 도넛 (따릉이)
+#### 🌧️ 라인 (강수확률)
 ```typescript
 {
-  type: 'donut',
-  segments: [
-    { value: available, color: colors.adaptiveBlue500 },
-    { value: unavailable, color: colors.adaptiveGrey200 },
-  ],
-  centerLabel: `${available}%`,
-  centerSubLabel: '가용',
-  thickness: 12,
+  type: 'line',
+  data: hourly.precipitation_probability,  // 24h, %
+  color: colors.adaptiveBlue500,
+  thickness: 2,
+  startFillColor: colors.adaptiveBlue100,
+  endFillColor: 'transparent',
+  areaChart: true,
+  yAxisLabelSuffix: '%',
+  noOfSections: 4,
+  maxValue: 100,
 }
 ```
 

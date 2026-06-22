@@ -42,9 +42,9 @@
                           ▼
    ┌──────────────────────────────────────────────────┐
    │  외부 공개 API (모두 무키, 영구 무료)              │
-   │  • Open-Meteo Forecast       • Open-Meteo Air Q. │
-   │  • Seoul 따릉이              • Nager Date          │
-   │  • Open-Meteo Geocoding      • Nominatim Reverse  │
+    │  • Open-Meteo Forecast       • Open-Meteo Air Q.   │
+    │  • Open-Meteo Precipitation  • Nager Date          │
+    │  • Open-Meteo Geocoding      • Nominatim Reverse  │
    └──────────────────────────────────────────────────┘
 ```
 
@@ -65,7 +65,7 @@ src/
 │   ├── cards/
 │   │   ├── WeatherCard.tsx           # 🌤️ 라인 차트 (LineChart) + 현재 기온 + 라벨
 │   │   ├── AirQualityCard.tsx        # 🌫️ 도넛 (PieChart) + 등급 라벨
-│   │   ├── BikeShareCard.tsx         # 🚴 도넛 (PieChart) + 평균 가용률 + 가장 가까운 정류소
+│   │   ├── PrecipitationCard.tsx    # 🌧️ 24h 라인 (LineChart) + 강수확률/강수량
 │   │   ├── HolidayCard.tsx           # 🎭 Badge (TDS) + 다음 공휴일 D-N
 │   │   └── CompareCard.tsx           # 👥 막대 (BarChart) + 우리 + 친구 동네
 │   ├── common/
@@ -78,7 +78,7 @@ src/
 │   ├── api/
 │   │   ├── weather.ts                # Open-Meteo Forecast + weather_code 라벨 매핑
 │   │   ├── airQuality.ts             # Open-Meteo AQ + PM2.5 → 등급 분류
-│   │   ├── bikeShare.ts              # 서울 따릉이 (paginated) + 평균 가용률 + nearest
+│   │   ├── precipitation.ts          # Open-Meteo Precipitation (daily/hourly)
 │   │   ├── holidays.ts               # Nager Date (올해+내년) + 다음 공휴일까지 D-day
 │   │   ├── geocoding.ts              # Open-Meteo Geocoding forward + Nominatim reverse (1초 throttle)
 │   │   └── index.ts                  # fetchAllData + getDashboard (30분 캐시 + fallback)
@@ -90,7 +90,7 @@ src/
 │   ├── shareLink.ts                  # 토스 share({ message }) + getTossShareLink
 │   └── haptics.ts                    # generateHapticFeedback 래퍼 (tap/success/error/tick/wiggle)
 └── types/
-    └── index.ts                      # Neighborhood, WeatherData, AirQualityData, BikeShareData, HolidayData, CharacterReport, DashboardData, CachedReport, StorageKeys
+    └── index.ts                      # Neighborhood, WeatherData, AirQualityData, PrecipitationData, HolidayData, CharacterReport, DashboardData, CachedReport, StorageKeys
 
 scripts/
 └── verify-engine.ts                  # 캐릭터 엔진 + 포맷 유틸 단위 테스트 (jest 없이 assert 사용)
@@ -116,14 +116,14 @@ storage.set('neighborhood', { name: district, lat, lon });
 
 ```typescript
 // HomeScreen.tsx (메인 진입)
-const [weather, air, bike, holiday] = await Promise.all([
+const [weather, air, precipitation, holiday] = await Promise.all([
   api.weather.fetch(lat, lon),       // Open-Meteo
   api.airQuality.fetch(lat, lon),    // Open-Meteo AQ
-  api.bikeShare.fetchNearest(lat, lon), // Seoul 따릉이
+  api.precipitation.fetch(lat, lon), // Open-Meteo Precipitation
   api.holidays.fetch(today),         // Nager Date
 ]);
 
-const character = characterEngine.decide({ weather, air, bike, holiday });
+const character = characterEngine.decide({ weather, air, precipitation, holiday });
 const friends = storage.get('friendNeighborhoods') || [];
 
 const compares = await Promise.all(
@@ -139,7 +139,7 @@ return (
     <CharacterReport character={character} />  // MBTI 한 줄
     <WeatherCard data={weather} />
     <AirQualityCard data={air} />
-    <BikeShareCard data={bike} />
+    <PrecipitationCard data={precipitation} />
     <HolidayCard data={holiday} />
     <CompareCard my={weather} friends={compares} />
   </Dashboard>
@@ -270,8 +270,8 @@ Jest 도입 없이 Node assert로 핵심 로직 단위 테스트 (`scripts/verif
 ## 🚧 알려진 제약
 
 1. **Nominatim rate limit**: 1 req/sec. 위치 변경 시 throttle 필요.
-2. **따릉이 sample 키**: 일일 100~500 호출 제한. 사용자 늘면 sample quota 가능성 → 정식 키 발급 권장 (토스 콘솔에서 안내).
-3. **Open-Meteo 무료 tier**: 분당 600 호출. 우리 앱엔 충분.
+2. **Open-Meteo 무료 tier**: 분당 600 호출. 우리 앱엔 충분.
+3. **Open-Meteo 응답 timezone 명시**: `timezone=Asia/Seoul` 필수 (auto 금지 — 시간 파싱 오류 위험).
 
 ---
 

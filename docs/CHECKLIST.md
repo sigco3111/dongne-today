@@ -51,7 +51,7 @@
 ### API 서비스 함수
 - [ ] `services/api/weather.ts` — Open-Meteo Forecast
 - [ ] `services/api/airQuality.ts` — Open-Meteo Air Quality
-- [ ] `services/api/bikeShare.ts` — 서울 따릉이 (sample 키)
+- [ ] `services/api/precipitation.ts` — Open-Meteo 강수확률/강수량 (전국)
 - [ ] `services/api/holidays.ts` — Nager Date
 - [ ] `services/api/geocoding.ts` — Nominatim + Open-Meteo
 
@@ -78,7 +78,7 @@
 - [ ] 차트 라이브러리 결정 (`react-native-gifted-charts` 추천)
 - [ ] `WeatherCard` — 라인 차트 (24시간 기온)
 - [ ] `AirQualityCard` — 게이지 + 캐릭터 표정
-- [ ] `BikeShareCard` — 도넛 (가용률)
+- [ ] `PrecipitationCard` — 24h 라인 (강수확률)
 - [ ] `HolidayCard` — 배지
 - [ ] `CompareCard` — 가로 막대 비교
 
@@ -193,7 +193,7 @@
 
 | 위험 | 대응 |
 |---|---|
-| 따릉이 sample 키 quota 소진 | 정식 키 발급 (토스 콘솔 가이드) |
+| Open-Meteo 무료 티어 quota 초과 | 캐시 TTL 30분으로 충분, 초과 시 1분 캐시로 단축 |
 | API 변경/다운 | Open-Meteo는 안정적이나 fallback 룰 준비 |
 | 출품 직전 큰 버그 발견 | Phase 4-5에서 충분한 버퍼 |
 | 심사 반려 (콘솔 검수) | TDS 사용 + 콘솔 가이드 엄격 준수 |

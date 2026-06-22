@@ -8,7 +8,7 @@
 ## 🎯 프로젝트 한 줄 요약
 
 **토스 앱인토스 바이브코딩 챌린지 (2026년 6월) 출품작.**
-"우리 동네 오늘" — 사용자의 현재 동네 컨디션(날씨/미세먼지/따릉이/공휴일)을 인포그래픽 대시보드 + MBTI 캐릭터형 한 줄 리포트로 보여주는 미니앱. **서버 0, API 키 0**.
+"우리 동네 오늘" — 사용자의 현재 동네 컨디션(날씨/미세먼지/강수확률/공휴일)을 인포그래픽 대시보드 + MBTI 캐릭터형 한 줄 리포트로 보여주는 미니앱. **서버 0, API 키 0**.
 
 ---
 
@@ -94,7 +94,7 @@ dongne-today/
 |---|---|---|
 | 1 | 날씨 | `https://api.open-meteo.com/v1/forecast` |
 | 2 | 미세먼지 | `https://air-quality-api.open-meteo.com/v1/air-quality` |
-| 3 | 따릉이 | `http://openapi.seoul.go.kr:8088/sample/json/bikeList/{start}/{end}/` |
+| 3 | 강수확률/강수량 | `https://api.open-meteo.com/v1/forecast` (daily+hourly precipitation vars) |
 | 4 | 공휴일 | `https://date.nager.at/api/v3/PublicHolidays/{year}/KR` |
 | 5 | 주소→좌표 | `https://geocoding-api.open-meteo.com/v1/search?name={name}` |
 | 6 | 좌표→주소 | `https://nominatim.openstreetmap.org/reverse?lat={lat}&lon={lon}&format=json` |
@@ -108,7 +108,7 @@ dongne-today/
 - 자세한 디자인 톤: `docs/DESIGN_SYSTEM.md`
 
 ### 5. **MBTI 캐릭터 6종**
-- ☀️ E형 활동가 (인구 많음 + 따릉이 50%↑)
+- ☀️ E형 활동가 (강수확률 < 30% && 강수량 < 1mm + 날씨 좋음)
 - 🌙 조용한 I형 (인구 적음 + 미세먼지 좋음)
 - 🎨 문화인 (행사 3개↑)
 - 🚇 출근러 동네 (지하철 관련도 — ⚠️ 일단 미사용)

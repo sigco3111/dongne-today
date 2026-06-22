@@ -13,7 +13,7 @@ src/
 │   ├── cards/
 │   │   ├── WeatherCard.tsx
 │   │   ├── AirQualityCard.tsx
-│   │   ├── BikeShareCard.tsx
+│   │   ├── PrecipitationCard.tsx
 │   │   ├── HolidayCard.tsx
 │   │   └── CompareCard.tsx
 │   ├── common/
@@ -25,7 +25,7 @@ src/
 │   ├── api/
 │   │   ├── weather.ts
 │   │   ├── airQuality.ts
-│   │   ├── bikeShare.ts
+│   │   ├── precipitation.ts
 │   │   ├── holidays.ts
 │   │   ├── geocoding.ts
 │   │   └── index.ts
