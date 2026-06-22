@@ -35,7 +35,7 @@
 | 영역 | 기술 | 비고 |
 |---|---|---|
 | 프레임워크 | **Next.js 15** (App Router) | TypeScript strict, React 19 |
-| 스타일링 | **Tailwind CSS v4** + TDS 디자인 토큰 | `#3182F6`, `#191F28` 등 CSS vars |
+| 스타일링 | **Tailwind CSS v4** (CSS-first) + TDS 디자인 토큰 | `globals.css`의 `@theme { --color-tds-blue: #3182F6; }`, **`tailwind.config.ts` 없음**, 차트/UI는 `var(--color-tds-blue)` 참조 |
 | 차트 | **recharts** | LineChart / RadialBarChart / AreaChart / BarChart |
 | 클라이언트 데이터 | **SWR** | 위치 기반 4종 + 30분 캐시 |
 | 서버 데이터 | **RSC + fetch cache** | 공휴일 (위치 무관) |
@@ -98,7 +98,7 @@ dongne-today/
 │   ├── onboarding/page.tsx         # 위치 권한 + 자동 인식
 │   ├── settings/page.tsx           # 우리/친구 동네 관리
 │   ├── globals.css                 # TDS 토큰 (CSS variables)
-│   └── manifest.ts                 # PWA 메타 (선택)
+│   └── manifest.ts                 # PWA 메타 — Out of Scope로 이동, 구조에서 제외
 ├── components/
 │   ├── cards/                      # 5종 카드 (recharts)
 │   │   ├── WeatherCard.tsx         # 24h 기온 LineChart
@@ -136,7 +136,7 @@ dongne-today/
 ├── utils/
 │   ├── characterEngine.ts          # 6종 MBTI 결정 (재사용)
 │   ├── format.ts                   # 온도/시간/거리/날짜 포맷 (재사용)
-│   └── shareLink.ts                # 공유 메시지 생성
+│   └── shareLink.ts                # 공유 메시지 생성 (Web Share API용, **RN의 shareLink와 별개**)
 ├── types/
 │   └── index.ts                    # 도메인 타입 (재사용)
 ├── archive/                        # 기존 RN/Granite 코드 백업
@@ -146,10 +146,10 @@ dongne-today/
 │   └── verify-engine.ts            # Node assert 단위 테스트 (재사용)
 ├── public/                         # 정적 자산
 ├── next.config.ts
-├── tailwind.config.ts
-├── tsconfig.json
+├── postcss.config.mjs              # Tailwind v4 PostCSS 플러그인
+├── tsconfig.json                   # "jsx": "preserve" (Next.js 기본)
 ├── package.json
-├── vitest.config.ts
+├── vitest.config.ts                # environment: 'jsdom'
 ├── .gitignore
 ├── README.md
 └── LICENSE
@@ -185,13 +185,32 @@ dongne-today/
 
 ---
 
-## 7. 재사용 파일 (변경 없이 복사)
+## 7. 재사용 파일 (로직 재사용 + import 경로 수정 필요)
 
-✅ **100% 재사용 가능 (프레임워크 무관)**:
-- `types/index.ts` — 도메인 타입 (Neighborhood, WeatherData, AirQualityData, PrecipitationData, HolidayData, CharacterReport, DashboardData, CachedReport, StorageKeys)
-- `utils/characterEngine.ts` — 6종 MBTI 결정 (순수 함수)
-- `utils/format.ts` — temp, percent, hourLabel, daysUntil, distance, relativeDate
-- `scripts/verify-engine.ts` — Node assert 단위 테스트 (Vitest로 확장 가능)
+✅ **로직은 100% 재사용, import 경로는 sed로 일괄 수정**:
+- `src/types/index.ts` → `types/index.ts` — 도메인 타입
+- `src/utils/characterEngine.ts` → `utils/characterEngine.ts` — 6종 MBTI 결정 (순수 함수)
+- `src/utils/format.ts` → `utils/format.ts` — temp, percent, hourLabel, daysUntil, distance, relativeDate
+- `scripts/verify-engine.ts` → `scripts/verify-engine.ts` (경로만 archive/로 보정) — Node assert 단위 테스트
+
+**import 경로 수정 작업 (Phase 4)**:
+```bash
+# src 내부 상대 import를 @/ alias로 일괄 변경
+find . -name "*.ts" -not -path "*/node_modules/*" -not -path "*/archive/*" \
+  -exec sed -i '' "s|from '\\.\\./\\.\\./types|from '@/types|g" {} \;
+find . -name "*.ts" -not -path "*/node_modules/*" -not -path "*/archive/*" \
+  -exec sed -i '' "s|from '\\.\\./types|from '@/types|g" {} \;
+# verify-engine.ts는 archive 안에 남기므로 별도 처리 불필요
+```
+
+**tsconfig.json path alias 설정**:
+```json
+{
+  "compilerOptions": {
+    "paths": { "@/*": ["./*"] }
+  }
+}
+```
 
 ✅ **로직 그대로 + fetch 부분만 수정**:
 - `lib/api/weather.ts`
@@ -301,7 +320,7 @@ export function useDashboardData(neighborhood: Neighborhood) {
 |---|---|---|
 | `app/layout.tsx` | 루트 (Pretendard, TDS vars) | next/font |
 | `app/page.tsx` | 메인 대시보드 | SWR, useDashboardData |
-| `app/onboarding/page.tsx` | 위치 권한 + 자동 인식 | useGeolocation |
+| `app/onboarding/page.tsx` | 위치 권한 + 자동 인식 | `lib/hooks/useGeolocation` (아래 정의됨) |
 | `app/settings/page.tsx` | 동네 관리 | useFriends |
 | `app/globals.css` | TDS 토큰 (CSS vars) | Tailwind v4 |
 | `tailwind.config.ts` | TDS 컬러 매핑 | Tailwind v4 |
@@ -312,10 +331,11 @@ export function useDashboardData(neighborhood: Neighborhood) {
 | `lib/hooks/useDashboardData.ts` | SWR hook | SWR, fetchAllData |
 | `lib/hooks/useNeighborhood.ts` | SWR + localStorage | SWR |
 | `lib/hooks/useFriends.ts` | 친구 동네 (localStorage) | (없음) |
+| `lib/hooks/useGeolocation.ts` | 위치 권한 + 좌표 hook (contract: `{coordinates, error, loading, request}`) | lib/location.ts |
 | `components/cards/*.tsx` (5개) | recharts 카드 | recharts |
 | `components/dashboard/DashboardGrid.tsx` | 2x3 그리드 | (없음) |
 | `components/dashboard/CharacterReport.tsx` | MBTI 헤더 | (재사용) |
-| `components/dashboard/ErrorBoundary.tsx` | 에러 격리 | React 19 |
+| `components/dashboard/ErrorBoundary.tsx` | 에러 격리 (React 표준 ErrorBoundary) | (없음) |
 | `components/neighborhood/NeighborhoodPicker.tsx` | 주소 검색 모달 | (재사용 + 변환) |
 | `components/ui/*.tsx` (4개) | 프리미티브 | Tailwind |
 
@@ -371,6 +391,8 @@ export function useDashboardData(neighborhood: Neighborhood) {
 - ❌ `react-native-gifted-charts`
 - ❌ `brick-module`
 - ❌ `@babel/runtime`
+- ❌ `@apps-in-toss/cli` (devDependency)
+- ❌ `assets/` (RN 전용 이미지 자산)
 
 **이들은 모두 `archive/toss-app/`로 이동** (git history 보존)
 
@@ -390,10 +412,9 @@ export function useDashboardData(neighborhood: Neighborhood) {
 - 정적 자산: `.next/static/`
 - SSG/SSR: App Router 기본 (mixed)
 
-### 12.3 PWA (선택)
-- `app/manifest.ts` 또는 `public/manifest.json`
-- Service Worker: `next-pwa` 또는 `workbox`
-- 홈스크린 추가 가능
+### 12.3 PWA — **Out of Scope (본 마이그레이션 범위 밖)**
+- 별도 후속 작업으로 분리
+- 필요 시 `app/manifest.ts` + `next-pwa` 도입
 
 ---
 
@@ -402,7 +423,7 @@ export function useDashboardData(neighborhood: Neighborhood) {
 | Phase | 작업 | 산출물 | 검증 |
 |---|---|---|---|
 | **1. Bootstrap** | `npx create-next-app@latest` + 의존성 추가 | `package.json`, `next.config.ts`, `tailwind.config.ts` | `yarn dev` → 빈 페이지 200 OK |
-| **2. Archive** | 기존 RN 코드를 `archive/toss-app/`로 이동 | archive 디렉토리 구조 | `git status` 깨끗, `ls archive/` 확인 |
+| **2. Archive** | 기존 RN 코드를 **`git mv`**로 `archive/toss-app/`로 이동 (history 보존) | archive 디렉토리 구조 | `git log --follow src/_app.tsx` 추적 가능, `ls archive/toss-app/` 확인 |
 | **3. Design Tokens** | `globals.css` + `tailwind.config.ts`에 TDS 토큰 정의 | CSS vars + Tailwind 클래스 | Storybook 또는 단일 페이지에서 색상 확인 |
 | **4. Reuse + Test** | `types/`, `utils/`, `scripts/` 복사 + Vitest 설정 | 4개 파일 + `vitest.config.ts` | `yarn verify` + `yarn test` 모두 통과 |
 | **5. API Layer** | 6종 API 재작성 (Next.js fetch + SWR hooks) | `lib/api/*.ts` (6개) + `lib/hooks/*.ts` (3개) | curl로 6종 API 직접 fetch + 30분 캐시 동작 |
@@ -411,6 +432,37 @@ export function useDashboardData(neighborhood: Neighborhood) {
 
 각 Phase마다 TDD (RED → GREEN → SURFACE) 적용.
 
+### Phase 2 상세 명령 (git history 보존)
+```bash
+mkdir -p archive/toss-app
+git mv src archive/toss-app/
+git mv scripts archive/toss-app/
+git mv granite.config.ts archive/toss-app/
+git mv app.json archive/toss-app/
+git mv index.js archive/toss-app/
+git mv assets archive/toss-app/ 2>/dev/null || true
+# 검증: git log --follow archive/toss-app/src/_app.tsx 추적 가능
+```
+
+### Phase 4 상세 명령 (reusable 코드 이전 + import 경로 수정)
+```bash
+# 1. reusable 파일 복사 (git mv로 history 보존)
+git mv src/types types       # types는 archive에서 제외 (재사용 대상)
+git mv src/utils/characterEngine.ts utils/
+git mv src/utils/format.ts utils/
+# 2. import 경로 일괄 수정
+find . -name "*.ts" -not -path "*/node_modules/*" -not -path "*/archive/*" \
+  -exec sed -i '' "s|from '\\.\\./\\.\\./types|from '@/types|g" {} \;
+find . -name "*.ts" -not -path "*/node_modules/*" -not -path "*/archive/*" \
+  -exec sed -i '' "s|from '\\.\\./types|from '@/types|g" {} \;
+# 3. verify-engine.ts는 archive 안에 남겨두므로 별도 처리 불필요
+# 4. Vitest 설정 추가
+yarn add -D vitest @vitejs/plugin-react jsdom @testing-library/react @testing-library/jest-dom
+# 5. vitest.config.ts 생성
+echo 'import { defineConfig } from "vitest/config"; export default defineConfig({ test: { environment: "jsdom" } });' > vitest.config.ts
+# 6. 검증: yarn verify && yarn test 모두 통과
+```
+
 ---
 
 ## 14. 성공 기준 (Acceptance Criteria)
@@ -418,7 +470,7 @@ export function useDashboardData(neighborhood: Neighborhood) {
 | # | 기준 | 검증 방법 |
 |---|---|---|
 | AC1 | `yarn dev` → 200 OK, 페이지 로드 1.5초 이내 | curl localhost:3000 |
-| AC2 | 6종 API 모두 200 OK + JSON shape 검증 | curl + JSON 파싱 |
+| AC2 | 6종 API 모두 200 OK + zod schema 검증 통과 | curl + `WeatherResponseSchema.parse()`, `AirQualityResponseSchema.parse()` 등 (6종 스키마 모두 통과) |
 | AC3 | 5종 카드 모두 정상 렌더링 | 브라우저 스크린샷 |
 | AC4 | MBTI 캐릭터 6종 모두 한 번씩 등장 | 시간/데이터 모킹 테스트 |
 | AC5 | 위치 권한 → 자동 인식 → 수동 보정 | 브라우저 E2E (Playwright) |
@@ -472,3 +524,114 @@ export function useDashboardData(neighborhood: Neighborhood) {
 ---
 
 **End of spec — next: commit → spec review loop → writing-plans**
+
+---
+
+## 부록 A. TDS 디자인 토큰 매핑 (CSS vars)
+
+`app/globals.css`의 `@theme` 블록에 정의:
+
+```css
+@import "tailwindcss";
+
+@theme {
+  /* Primary */
+  --color-tds-blue: #3182F6;
+  --color-tds-blue-light: #E8F3FF;
+
+  /* Grey scale */
+  --color-tds-grey-50: #F9FAFB;
+  --color-tds-grey-100: #F2F4F6;
+  --color-tds-grey-200: #E5E8EB;
+  --color-tds-grey-400: #B0B8C1;
+  --color-tds-grey-500: #8B95A1;
+  --color-tds-grey-700: #4E5968;
+  --color-tds-grey-900: #191F28;
+
+  /* Status */
+  --color-tds-green: #03B26C;
+  --color-tds-yellow: #FFC342;
+  --color-tds-orange: #FF8A00;
+  --color-tds-red: #F04452;
+  --color-tds-purple: #8B5CF6;
+
+  /* Background (adaptive via prefers-color-scheme) */
+  --color-tds-bg: #FFFFFF;
+  --color-tds-fg: #191F28;
+
+  /* Spacing / Radius (디자인 시스템 일관성) */
+  --radius-tds-sm: 8px;
+  --radius-tds-md: 12px;
+  --radius-tds-lg: 16px;
+  --radius-tds-xl: 24px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-tds-bg: #191F28;
+    --color-tds-fg: #FFFFFF;
+    --color-tds-grey-50: #1E232B;
+    --color-tds-grey-100: #252B33;
+    --color-tds-grey-200: #2E343C;
+    --color-tds-grey-500: #6B7682;
+    --color-tds-grey-700: #B0B8C1;
+    --color-tds-grey-900: #FFFFFF;
+  }
+}
+```
+
+**Tailwind v4 사용법**:
+```tsx
+// ❌ 잘못: hex 하드코드
+<div className="bg-[#3182F6]">
+
+// ✅ 올바름: 토큰 참조 (자동 다크모드)
+<div className="bg-tds-blue text-tds-grey-900 dark:bg-tds-grey-900 dark:text-tds-white">
+```
+
+**recharts 사용법** (CSS vars는 JS에서 직접 참조):
+```tsx
+<Line stroke="var(--color-tds-blue)" />
+<Pie fill="var(--color-tds-green)" />
+```
+
+---
+
+## 부록 B. 검증 커맨드 모음 (수동 QA)
+
+```bash
+# Phase 1: 부트스트랩
+yarn dev &
+sleep 3
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:3000  # → 200
+
+# Phase 2: archive 이력 보존
+git log --follow archive/toss-app/src/_app.tsx  # → 커밋 히스토리 추적 가능
+
+# Phase 3: TDS 토큰
+grep -E "color-tds-(blue|grey-900)" app/globals.css  # → 2개 이상 매치
+yarn dev &
+curl -s http://localhost:3000 | grep -E "tds-(blue|grey)"  # → 토큰 클래스 적용 확인
+
+# Phase 4: 재사용 + Vitest
+yarn verify   # 기존 verify-engine.ts 통과
+yarn test     # Vitest 통과
+
+# Phase 5: 6종 API
+for url in \
+  "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.9780&current=temperature_2m" \
+  "https://air-quality-api.open-meteo.com/v1/air-quality?latitude=37.5665&longitude=126.9780&current=pm2_5" \
+  "https://date.nager.at/api/v3/PublicHolidays/2026/KR"; do
+  curl -sI "$url" | head -1  # → 200 OK
+done
+
+# Phase 6: 카드 렌더링
+yarn dev &
+sleep 3
+# Playwright 또는 curl로 페이지 HTML 확인
+
+# Phase 7: Vercel 빌드
+yarn build  # → exit 0
+git push origin main  # → Vercel 자동 배포
+curl -sI https://<project>.vercel.app | head -1  # → 200
+```
