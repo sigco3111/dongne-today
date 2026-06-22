@@ -1,6 +1,13 @@
 import type { Metadata, Viewport } from 'next';
 import { Suspense } from 'react';
+import { Inter } from 'next/font/google';
 import './globals.css';
+
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-tds-sans',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: '우리 동네 오늘',
@@ -26,7 +33,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko">
+    <html lang="ko" className={inter.variable}>
       <body className="bg-tds-bg text-tds-fg antialiased">
         <Suspense>{children}</Suspense>
       </body>
