@@ -4,16 +4,16 @@ import { fetchWeather } from '@/lib/api/weather';
 import { fetchAirQuality } from '@/lib/api/airQuality';
 import { fetchPrecipitation } from '@/lib/api/precipitation';
 import type {
-  Neighborhood,
-  WeatherData,
-  AirQualityData,
-  PrecipitationData,
-} from '@/types';
+  WeatherResponse,
+  AirQualityResponse,
+  PrecipitationResponse,
+} from '@/lib/api/schemas';
+import type { Neighborhood } from '@/types';
 
 export interface DashboardData {
-  weather: WeatherData;
-  airQuality: AirQualityData;
-  precipitation: PrecipitationData;
+  weather: WeatherResponse;
+  airQuality: AirQualityResponse;
+  precipitation: PrecipitationResponse;
 }
 
 async function fetcher([, lat, lon]: [string, number, number]): Promise<DashboardData> {
