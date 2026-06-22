@@ -6,7 +6,7 @@
  * - COMMUTER_DONGNE (🚇): 평일 출근시간
  * - WALK_LOVER (☁️): 미세먼지 좋음 + 날씨 좋음
  * - CULTURALIST (🎨): 공휴일
- * - E_ACTIVE (☀️): 따릉이 가용률 50%↑ + 좋은 날씨
+ * - E_ACTIVE (☀️): 강수확률 낮음 + 비 안 옴 + 좋은 날씨 → 활동적
  * - I_QUIET (🌙): 기본값 (차분)
  *
  * 결정 우선순위는 docs/DESIGN_SYSTEM.md 참조.
@@ -17,14 +17,14 @@ import type {
   CharacterReport,
   WeatherData,
   AirQualityData,
-  BikeShareData,
+  PrecipitationData,
   HolidayData,
 } from '../types';
 
 interface CharacterInput {
   weather: WeatherData;
   airQuality: AirQualityData;
-  bikeShare: BikeShareData;
+  precipitation: PrecipitationData;
   holiday: HolidayData;
 }
 
@@ -75,7 +75,7 @@ export const CHARACTERS: Record<
  * 시간 의존 룰(COMMUTER_DONGNE)은 클라이언트 로컬 시간 기준.
  */
 export function decideCharacter(input: CharacterInput): CharacterReport {
-  const { weather, airQuality, bikeShare, holiday } = input;
+  const { weather, airQuality, precipitation, holiday } = input;
   const pm25 = airQuality.current.pm2_5;
   const weatherCode = weather.current.weather_code;
   const hour = new Date().getHours();
@@ -101,9 +101,16 @@ export function decideCharacter(input: CharacterInput): CharacterReport {
     return { ...CHARACTERS.CULTURALIST, matchedRule: 'isHoliday' };
   }
 
-  // 5순위: E형 활동가 (따릉이 50%+ + 좋은 날씨)
-  if (bikeShare.averageAvailable >= 50 && weatherCode <= 3) {
-    return { ...CHARACTERS.E_ACTIVE, matchedRule: 'bikeShare >=50 AND weather <=3' };
+  // 5순위: E형 활동가 (강수 거의 없음 + 좋은 날씨)
+  if (
+    precipitation.todayProbabilityMax < 30 &&
+    precipitation.todaySum < 1 &&
+    weatherCode <= 3
+  ) {
+    return {
+      ...CHARACTERS.E_ACTIVE,
+      matchedRule: 'precipitation.todayProbabilityMax <30 AND todaySum <1 AND weatherCode <=3',
+    };
   }
 
   // 6순위: I형 (기본)

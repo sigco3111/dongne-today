@@ -17,7 +17,7 @@ export async function shareDashboardText(data: DashboardData): Promise<void> {
     `🏘️ 우리 동네 오늘 (${data.neighborhood.name})`,
     `${data.character.emoji} ${data.character.line}`,
     `🌡️ ${Math.round(data.weather.current.temperature_2m)}° · 🌫️ PM2.5 ${Math.round(data.airQuality.current.pm2_5)}`,
-    `🚴 따릉이 평균 ${data.bikeShare.averageAvailable}%`,
+    `🌧️ 강수확률 ${data.precipitation.todayProbabilityMax}% · 강수량 ${data.precipitation.todaySum.toFixed(1)}mm`,
     data.holiday.isHoliday
       ? `🎉 오늘은 ${data.holiday.holidayName}`
       : `📅 ${data.holiday.daysUntilNext >= 0 ? `다음 공휴일 ${data.holiday.daysUntilNext}일 전` : '평일'}`,

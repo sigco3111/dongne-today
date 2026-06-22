@@ -64,7 +64,7 @@ export function OnboardingScreen({ onDone }: Props) {
       <Txt typography="st2" color={colors.grey700}>
         동네의 오늘을 6가지 데이터로 한눈에.
         {'\n'}
-        날씨, 미세먼지, 따릉이, 공휴일까지.
+        날씨, 미세먼지, 강수, 공휴일까지.
       </Txt>
 
       <View style={styles.illustration}>

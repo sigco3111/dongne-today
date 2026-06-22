@@ -75,14 +75,14 @@ export const storage = {
 
   // === 캐시 (30분) ===
   async getCachedReport(): Promise<CachedReport<DashboardData> | null> {
-    return getJson('cachedReport');
+    return getJson('cachedReport_v2');
   },
   async setCachedReport(report: DashboardData): Promise<void> {
     const cached: CachedReport<DashboardData> = {
       data: report,
       timestamp: Date.now(),
     };
-    await setJson('cachedReport', cached);
+    await setJson('cachedReport_v2', cached);
   },
   async isCacheValid(): Promise<boolean> {
     const cached = await storage.getCachedReport();
@@ -90,7 +90,7 @@ export const storage = {
     return Date.now() - cached.timestamp < CACHE_TTL_MS;
   },
   async clearCache(): Promise<void> {
-    await Storage.removeItem('cachedReport');
+    await Storage.removeItem('cachedReport_v2');
   },
 
   // === 온보딩 완료 여부 ===

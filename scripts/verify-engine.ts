@@ -22,7 +22,7 @@ import {
 import type {
   WeatherData,
   AirQualityData,
-  BikeShareData,
+  PrecipitationData,
   HolidayData,
 } from '../src/types';
 
@@ -88,10 +88,14 @@ const fakeAir = (pm25: number): AirQualityData => ({
   fetchedAt: '',
 });
 
-const fakeBike = (avg: number): BikeShareData => ({
-  averageAvailable: avg,
-  totalStations: 100,
+// 기본값: 비 안 옴 + 강수확률 10% → E_ACTIVE 매칭 가능 상태
+const fakePrecipitation = (over: Partial<PrecipitationData> = {}): PrecipitationData => ({
+  hourly: { time: [], precipitation: [], precipitation_probability: [] },
+  daily: { time: [], precipitation_sum: [], precipitation_probability_max: [] },
+  todaySum: 0,
+  todayProbabilityMax: 10,
   fetchedAt: '',
+  ...over,
 });
 
 const fakeHoliday = (over: Partial<HolidayData> = {}): HolidayData => ({
@@ -109,7 +113,7 @@ test('MASK_DONGNE: PM2.5 >= 75', () => {
   const c = decideCharacter({
     weather: fakeWeather(0),
     airQuality: fakeAir(80),
-    bikeShare: fakeBike(60),
+    precipitation: fakePrecipitation(),
     holiday: fakeHoliday(),
   });
   assertEqual(c.kind, 'MASK_DONGNE');
@@ -120,7 +124,7 @@ test('WALK_LOVER: PM2.5 <=15 AND weather_code <=2', () => {
     const c = decideCharacter({
       weather: fakeWeather(1),
       airQuality: fakeAir(10),
-      bikeShare: fakeBike(40),
+      precipitation: fakePrecipitation(),
       holiday: fakeHoliday(),
     });
     assertEqual(c.kind, 'WALK_LOVER');
@@ -132,31 +136,60 @@ test('CULTURALIST: 공휴일 (PM2.5 보통, 날씨 보통)', () => {
     const c = decideCharacter({
       weather: fakeWeather(3),
       airQuality: fakeAir(25),
-      bikeShare: fakeBike(30),
+      precipitation: fakePrecipitation(),
       holiday: fakeHoliday({ isHoliday: true, holidayName: '광복절' }),
     });
     assertEqual(c.kind, 'CULTURALIST');
   });
 });
 
-test('E_ACTIVE: 따릉이 50%+ + 좋은 날씨', () => {
+test('E_ACTIVE: 강수 거의 없음 + 좋은 날씨', () => {
   withMockedHour(15, () => {
     const c = decideCharacter({
       weather: fakeWeather(1),
       airQuality: fakeAir(25),
-      bikeShare: fakeBike(65),
+      precipitation: fakePrecipitation({ todayProbabilityMax: 10, todaySum: 0 }),
       holiday: fakeHoliday(),
     });
     assertEqual(c.kind, 'E_ACTIVE');
   });
 });
 
+// ---- E_ACTIVE boundary (strict <) ----
+test('E_ACTIVE boundary: probability=30 NOT match (strict <)', () => {
+  withMockedHour(15, () => {
+    // pm25=25 → WALK_LOVER 미매칭, 공휴일 아님, 강수확률 30%는 strict < 30으로 미매칭
+    const c = decideCharacter({
+      weather: fakeWeather(1),
+      airQuality: fakeAir(25),
+      precipitation: fakePrecipitation({ todayProbabilityMax: 30, todaySum: 0 }),
+      holiday: fakeHoliday(),
+    });
+    assertEqual(c.kind, 'I_QUIET');
+  });
+});
+
+test('E_ACTIVE boundary: sum=1 NOT match (strict <)', () => {
+  withMockedHour(15, () => {
+    // 강수량 1mm는 strict < 1로 미매칭
+    const c = decideCharacter({
+      weather: fakeWeather(1),
+      airQuality: fakeAir(25),
+      precipitation: fakePrecipitation({ todayProbabilityMax: 10, todaySum: 1 }),
+      holiday: fakeHoliday(),
+    });
+    assertEqual(c.kind, 'I_QUIET');
+  });
+});
+// ---- /E_ACTIVE boundary ----
+
 test('I_QUIET: 기본값 (모든 조건 보통)', () => {
   withMockedHour(15, () => {
     const c = decideCharacter({
       weather: fakeWeather(3),
       airQuality: fakeAir(40),
-      bikeShare: fakeBike(30),
+      // 강수확률 40% → E_ACTIVE 미매칭 (>= 30)
+      precipitation: fakePrecipitation({ todayProbabilityMax: 40 }),
       holiday: fakeHoliday(),
     });
     assertEqual(c.kind, 'I_QUIET');
@@ -168,7 +201,7 @@ test('COMMUTER_DONGNE: 평일 7-9시', () => {
     const c = decideCharacter({
       weather: fakeWeather(3),
       airQuality: fakeAir(25),
-      bikeShare: fakeBike(30),
+      precipitation: fakePrecipitation(),
       holiday: fakeHoliday({ isWeekday: true }),
     });
     assertEqual(c.kind, 'COMMUTER_DONGNE');
@@ -181,7 +214,7 @@ test('우선순위: 마스크 > 출근러 > 산책러 > 문화인 > 활동가 > 
     const c = decideCharacter({
       weather: fakeWeather(0),
       airQuality: fakeAir(80),
-      bikeShare: fakeBike(60),
+      precipitation: fakePrecipitation(),
       holiday: fakeHoliday({ isHoliday: true, isWeekday: true }),
     });
     assertEqual(c.kind, 'MASK_DONGNE');

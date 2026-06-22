@@ -41,27 +41,21 @@ export interface AirQualityData {
   fetchedAt: string;
 }
 
-export interface BikeShareStation {
-  stationId: string;
-  stationName: string;
-  /** 가용 자전거 수 */
-  parkingBikeTotCnt: number;
-  /** 거치대 총량 */
-  rackTotCnt: number;
-  /** 위경도 */
-  latitude: number;
-  longitude: number;
-  /** 사용자 좌표로부터의 거리 (m) — 옵션 */
-  distance?: number;
-}
-
-export interface BikeShareData {
-  /** 평균 가용률 (0-100) */
-  averageAvailable: number;
-  /** 가용률 = parkingBikeTotCnt / rackTotCnt 평균 */
-  totalStations: number;
-  /** 가장 가까운 따릉이 정류소 (옵션) */
-  nearest?: BikeShareStation;
+export interface PrecipitationData {
+  hourly: {
+    time: string[];
+    precipitation: number[];
+    precipitation_probability: number[];
+  };
+  daily: {
+    time: string[];
+    precipitation_sum: number[];
+    precipitation_probability_max: number[];
+  };
+  /** 오늘 일일 강수량 합계 (mm) */
+  todaySum: number;
+  /** 오늘 일일 강수확률 최대값 (%) */
+  todayProbabilityMax: number;
   fetchedAt: string;
 }
 
@@ -100,7 +94,7 @@ export interface DashboardData {
   neighborhood: Neighborhood;
   weather: WeatherData;
   airQuality: AirQualityData;
-  bikeShare: BikeShareData;
+  precipitation: PrecipitationData;
   holiday: HolidayData;
   character: CharacterReport;
   /** 친구 동네별 날씨 (비교 카드용) */
@@ -122,6 +116,6 @@ export interface StorageKeys {
   neighborhood: Neighborhood;
   friendNeighborhoods: FriendNeighborhood[];
   lastVisitDate: string;
-  cachedReport: CachedReport<DashboardData>;
+  cachedReport_v2: CachedReport<DashboardData>;
   onboardingDone: boolean;
 }

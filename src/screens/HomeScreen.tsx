@@ -92,7 +92,7 @@ export function HomeScreen({ onOpenSettings }: Props) {
           동네 정보 가져오는 중...
         </Txt>
         <Txt typography="st3" color={colors.grey400} style={styles.loadingHint}>
-          날씨 · 미세먼지 · 따릉이 · 공휴일 6종 데이터
+          날씨 · 미세먼지 · 강수 · 공휴일 6종 데이터
         </Txt>
       </View>
     );

@@ -15,7 +15,7 @@ import type {
 import { storage } from '../storage';
 import { weather } from './weather';
 import { airQuality } from './airQuality';
-import { bikeShare } from './bikeShare';
+import { precipitation } from './precipitation';
 import { holidays } from './holidays';
 import { decideCharacter } from '../../utils/characterEngine';
 
@@ -23,11 +23,11 @@ export async function fetchAllData(
   neighborhood: Neighborhood,
   friends: FriendNeighborhood[] = [],
 ): Promise<DashboardData> {
-  const [weatherData, airQualityData, bikeShareData, holidayData] =
+  const [weatherData, airQualityData, precipitationData, holidayData] =
     await Promise.all([
       weather.fetch(neighborhood),
       airQuality.fetch(neighborhood),
-      bikeShare.fetchNearest(neighborhood),
+      precipitation.fetch(neighborhood),
       holidays.fetchToday(),
     ]);
 
@@ -41,7 +41,7 @@ export async function fetchAllData(
   const character = decideCharacter({
     weather: weatherData,
     airQuality: airQualityData,
-    bikeShare: bikeShareData,
+    precipitation: precipitationData,
     holiday: holidayData,
   });
 
@@ -49,7 +49,7 @@ export async function fetchAllData(
     neighborhood,
     weather: weatherData,
     airQuality: airQualityData,
-    bikeShare: bikeShareData,
+    precipitation: precipitationData,
     holiday: holidayData,
     character,
     friendsWeather,

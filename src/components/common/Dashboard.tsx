@@ -12,7 +12,7 @@ import type { DashboardData } from '../../types';
 import { CharacterReport } from './CharacterReport';
 import { WeatherCard } from '../cards/WeatherCard';
 import { AirQualityCard } from '../cards/AirQualityCard';
-import { BikeShareCard } from '../cards/BikeShareCard';
+import { PrecipitationCard } from '../cards/PrecipitationCard';
 import { HolidayCard } from '../cards/HolidayCard';
 import { CompareCard } from '../cards/CompareCard';
 
@@ -55,7 +55,7 @@ export function Dashboard({
       </View>
 
       <View style={styles.row}>
-        <BikeShareCard data={data.bikeShare} style={styles.cell} />
+        <PrecipitationCard data={data.precipitation} style={styles.cell} />
         <HolidayCard data={data.holiday} style={styles.cell} />
       </View>
 
