@@ -18,6 +18,9 @@ build/
 *.zip
 *.ait
 .granite/
+.next/
+out/
+*.tsbuildinfo
 
 # Bundle artifacts
 .expo/
