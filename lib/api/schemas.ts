@@ -8,8 +8,8 @@ export const WeatherResponseSchema = z.object({
   }),
   hourly: z.object({
     time: z.array(z.string()),
-    temperature_2m: z.array(z.number()),
-    precipitation_probability: z.array(z.number()),
+    temperature_2m: z.array(z.number().nullable()),
+    precipitation_probability: z.array(z.number().nullable()),
   }),
 });
 
@@ -21,21 +21,21 @@ export const AirQualityResponseSchema = z.object({
     european_aqi: z.number().int(),
   }),
   hourly: z.object({
-    pm10: z.array(z.number()),
-    pm2_5: z.array(z.number()),
+    pm10: z.array(z.number().nullable()),
+    pm2_5: z.array(z.number().nullable()),
   }),
 });
 
 export const PrecipitationResponseSchema = z.object({
   daily: z.object({
     time: z.array(z.string()),
-    precipitation_sum: z.array(z.number()),
-    precipitation_probability_max: z.array(z.number()),
+    precipitation_sum: z.array(z.number().nullable()),
+    precipitation_probability_max: z.array(z.number().nullable()),
   }),
   hourly: z.object({
     time: z.array(z.string()),
-    precipitation: z.array(z.number()),
-    precipitation_probability: z.array(z.number()),
+    precipitation: z.array(z.number().nullable()),
+    precipitation_probability: z.array(z.number().nullable()),
   }),
 });
 
