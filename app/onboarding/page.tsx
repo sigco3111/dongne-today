@@ -41,18 +41,17 @@ export default function OnboardingPage() {
     }
   };
 
-  // 도시명으로 검색 — Open-Meteo Geocoding
   const search = async () => {
     if (!query.trim()) return;
     setBusy(true);
     try {
       const r = await searchAddress(query);
       setResults(
-        r.map((g) => ({
-          name: [g.name, g.admin2, g.admin1, g.country_code].filter(Boolean).join(' '),
-          lat: g.latitude,
-          lon: g.longitude,
-        })),
+        r.map((g) => {
+          const parts = (g.displayName ?? g.name).split(',').map((s) => s.trim()).filter(Boolean);
+          const short = parts.length <= 2 ? (g.displayName ?? g.name) : parts.slice(0, 2).join(', ');
+          return { name: short, lat: g.lat, lon: g.lon };
+        }),
       );
     } catch {
       setResults([]);

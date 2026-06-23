@@ -1,17 +1,26 @@
-import { GeocodingResponseSchema, type GeocodingResult } from './schemas';
+import { searchAddressNominatim } from './nominatim';
+import type { NominatimSearchResult } from './schemas';
 
-const BASE_URL = 'https://geocoding-api.open-meteo.com/v1/search';
+export interface GeocodingResult {
+  name: string;
+  lat: number;
+  lon: number;
+  displayName?: string;
+  type?: string;
+}
 
+/**
+ * 한글/영어 모두 지원하는 주소 검색.
+ * Nominatim 사용 (Open-Meteo Geocoding 은 한글 미지원 + 행정구역 인식 약함).
+ * NominatimSearchResult → GeocodingResult 매핑.
+ */
 export async function searchAddress(query: string, count = 5): Promise<GeocodingResult[]> {
-  if (!query.trim()) return [];
-  const url = new URL(BASE_URL);
-  url.searchParams.set('name', query);
-  url.searchParams.set('count', String(count));
-  url.searchParams.set('language', 'en');
-  url.searchParams.set('format', 'json');
-
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error(`Geocoding API failed: ${res.status}`);
-  const json = await res.json();
-  return GeocodingResponseSchema.parse(json).results ?? [];
+  const results = await searchAddressNominatim(query, count);
+  return results.map((r: NominatimSearchResult) => ({
+    name: r.display_name,
+    lat: parseFloat(r.lat),
+    lon: parseFloat(r.lon),
+    displayName: r.display_name,
+    type: r.type,
+  }));
 }

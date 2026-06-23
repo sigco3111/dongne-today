@@ -24,9 +24,9 @@ export default function SettingsPage() {
       const r = await searchAddress(query);
       setResults(
         r.map((g) => ({
-          name: [g.name, g.admin2].filter(Boolean).join(' '),
-          lat: g.latitude,
-          lon: g.longitude,
+          name: extractShortName(g.displayName ?? g.name),
+          lat: g.lat,
+          lon: g.lon,
         })),
       );
     } catch {
@@ -35,6 +35,12 @@ export default function SettingsPage() {
       setBusy(false);
     }
   };
+
+  function extractShortName(displayName: string): string {
+    const parts = displayName.split(',').map((s) => s.trim()).filter(Boolean);
+    if (parts.length <= 2) return displayName;
+    return parts.slice(0, 2).join(', ');
+  }
 
   return (
     <main className="mx-auto max-w-screen-sm p-4">

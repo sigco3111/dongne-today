@@ -73,9 +73,22 @@ export const NominatimResponseSchema = z.object({
   address: NominatimAddressSchema.optional(),
 });
 
+export const NominatimSearchResultSchema = z.object({
+  place_id: z.number().int(),
+  lat: z.string(),
+  lon: z.string(),
+  display_name: z.string(),
+  name: z.string().optional(),
+  type: z.string().optional(),
+  importance: z.number().optional(),
+});
+
+export const NominatimSearchResponseSchema = z.array(NominatimSearchResultSchema);
+
 export type WeatherResponse = z.infer<typeof WeatherResponseSchema>;
 export type AirQualityResponse = z.infer<typeof AirQualityResponseSchema>;
 export type PrecipitationResponse = z.infer<typeof PrecipitationResponseSchema>;
 export type PublicHoliday = z.infer<typeof PublicHolidaySchema>;
 export type GeocodingResult = z.infer<typeof GeocodingResultSchema>;
 export type NominatimResponse = z.infer<typeof NominatimResponseSchema>;
+export type NominatimSearchResult = z.infer<typeof NominatimSearchResultSchema>;
