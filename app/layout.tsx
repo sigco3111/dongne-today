@@ -33,8 +33,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" className={inter.variable}>
-      <body className="bg-tds-bg text-tds-fg antialiased">
+    <html lang="ko" className={inter.variable} suppressHydrationWarning>
+      <body className="bg-tds-bg text-tds-fg antialiased" suppressHydrationWarning>
         <Suspense>{children}</Suspense>
       </body>
     </html>
