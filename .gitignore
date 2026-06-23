@@ -10,7 +10,6 @@ node_modules/
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
-yarn.lock
 
 # Build output
 dist/
@@ -19,6 +18,9 @@ build/
 *.zip
 *.ait
 .granite/
+.next/
+out/
+*.tsbuildinfo
 
 # Bundle artifacts
 .expo/
