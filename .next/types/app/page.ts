@@ -1,4 +1,4 @@
-// File: /Users/hjshin/Desktop/project/work/ai-driven-dev/dongne-today-vercel/app/page.tsx
+// File: /Users/hjshin/Desktop/project/work/ai-driven-dev/dongne-today/app/page.tsx
 import * as entry from '../../../app/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

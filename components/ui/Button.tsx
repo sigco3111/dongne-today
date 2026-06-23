@@ -6,23 +6,33 @@ export type ButtonVariant = 'primary' | 'weak' | 'ghost';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
+  size?: 'sm' | 'md';
   children: ReactNode;
 }
 
-/**
- * TDS 스타일 버튼 — primary/weak/ghost 3종
- * - primary: 메인 CTA (토스 블루)
- * - weak: 보조 액션 (회색 배경)
- * - ghost: 텍스트형 (호버 시 연한 블루 배경)
- */
-export function Button({ variant = 'primary', className, children, ...rest }: ButtonProps) {
+export function Button({ variant = 'primary', size = 'md', className, children, ...rest }: ButtonProps) {
   return (
     <button
       className={clsx(
-        'inline-flex items-center justify-center rounded-tds-md px-4 py-2 text-tds-st2 font-medium transition-colors',
-        variant === 'primary' && 'bg-tds-blue text-white hover:bg-tds-blue-dark',
-        variant === 'weak' && 'bg-tds-grey-100 text-tds-grey-900 hover:bg-tds-grey-200',
-        variant === 'ghost' && 'text-tds-blue hover:bg-tds-blue-light',
+        'inline-flex items-center justify-center gap-1.5 font-medium',
+        'rounded-tds-md transition-all duration-200 ease-out',
+        'active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none',
+        size === 'sm' && 'px-3 py-1.5 text-tds-st3',
+        size === 'md' && 'px-4 py-2.5 text-tds-st2',
+        variant === 'primary' && [
+          'bg-tds-blue text-white',
+          'hover:bg-tds-blue-dark hover:shadow-tds-md',
+        ],
+        variant === 'weak' && [
+          'bg-tds-grey-100 text-tds-grey-900',
+          'hover:bg-tds-grey-200',
+          'dark:bg-tds-grey-100 dark:hover:bg-tds-grey-200',
+        ],
+        variant === 'ghost' && [
+          'text-tds-blue',
+          'hover:bg-tds-blue-light',
+          'dark:hover:bg-tds-blue-light/20',
+        ],
         className,
       )}
       {...rest}

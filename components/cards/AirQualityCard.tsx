@@ -2,67 +2,53 @@
 import { Card } from '@/components/ui/Card';
 import { RadialBarChart, RadialBar, ResponsiveContainer, PolarAngleAxis } from 'recharts';
 import type { AirQualityData } from '@/types';
+import { Wind, Smile, Meh, Frown, Skull } from 'lucide-react';
 
-/**
- * PM2.5 값 → 등급/색상/이모지 매핑
- * - 좋음: ≤15 μg/m³
- * - 보통: ≤35
- * - 나쁨: ≤75
- * - 매우 나쁨: >75
- * (한국 환경부 기준 단순화)
- */
-function grade(pm25: number): { label: string; color: string; emoji: string } {
-  if (pm25 <= 15) return { label: '좋음', color: 'var(--color-tds-green)', emoji: '😊' };
-  if (pm25 <= 35) return { label: '보통', color: 'var(--color-tds-yellow)', emoji: '😐' };
-  if (pm25 <= 75) return { label: '나쁨', color: 'var(--color-tds-orange)', emoji: '😷' };
-  return { label: '매우 나쁨', color: 'var(--color-tds-red)', emoji: '🤢' };
+function grade(pm25: number): {
+  label: string;
+  color: string;
+  Icon: typeof Smile;
+} {
+  if (pm25 <= 15) return { label: '좋음', color: 'var(--color-tds-green)', Icon: Smile };
+  if (pm25 <= 35) return { label: '보통', color: 'var(--color-tds-yellow)', Icon: Meh };
+  if (pm25 <= 75) return { label: '나쁨', color: 'var(--color-tds-orange)', Icon: Frown };
+  return { label: '매우 나쁨', color: 'var(--color-tds-red)', Icon: Skull };
 }
 
-export interface AirQualityCardProps {
-  data: AirQualityData;
-}
-
-/**
- * 미세먼지 카드 — 도넛(라디얼) 게이지로 PM2.5 표시
- * PM10, level 필드는 색상/이모지 계산에 활용되지 않으므로 단순 표시용으로 사용 가능
- */
-export function AirQualityCard({ data }: AirQualityCardProps) {
+export function AirQualityCard({ data }: { data: AirQualityData }) {
   const pm25 = data.current.pm2_5;
-  const g = grade(pm25);
-  // 게이지 0~100% 스케일로 정규화 (최대 100 μg/m³ 기준)
+  const { label, color, Icon } = grade(pm25);
   const ratio = Math.min(100, (pm25 / 100) * 100);
 
   return (
-    <Card>
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-tds-st1">🌫️</span>
-        <h3 className="text-tds-st1 font-medium">미세먼지</h3>
+    <Card className="animate-stagger animate-stagger-2" padding="md">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-tds-st1 font-semibold text-tds-grey-900 tracking-tight">미세먼지</h3>
+        <Wind size={20} strokeWidth={1.75} className="text-tds-grey-500" />
       </div>
       <div className="flex items-center gap-4">
-        <div className="w-20 h-20">
+        <div className="relative w-20 h-20 flex-shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart
-              innerRadius="70%"
+              innerRadius="75%"
               outerRadius="100%"
-              data={[{ name: 'pm25', value: ratio, fill: g.color }]}
+              data={[{ name: 'pm25', value: ratio, fill: color }]}
               startAngle={90}
               endAngle={-270}
             >
               <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-              <RadialBar
-                background={{ fill: 'var(--color-tds-grey-100)' }}
-                dataKey="value"
-                cornerRadius={6}
-              />
+              <RadialBar background={{ fill: 'var(--color-tds-grey-100)' }} dataKey="value" cornerRadius={8} />
             </RadialBarChart>
           </ResponsiveContainer>
-        </div>
-        <div>
-          <div className="text-tds-t2 font-bold" style={{ color: g.color }}>
-            {g.label}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Icon size={22} strokeWidth={1.75} style={{ color }} />
           </div>
-          <div className="text-tds-st3 text-tds-grey-500">
-            PM2.5 {pm25} μg/m³ {g.emoji}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-tds-t3 font-bold tracking-tight" style={{ color }}>{label}</div>
+          <div className="text-tds-st3 text-tds-grey-500 mt-0.5">
+            PM2.5 <span className="font-semibold tabular-nums text-tds-grey-900">{Math.round(pm25)}</span>
+            <span className="text-tds-st3 ml-1">μg/m³</span>
           </div>
         </div>
       </div>

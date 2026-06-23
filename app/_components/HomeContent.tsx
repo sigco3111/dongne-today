@@ -5,25 +5,21 @@ import { useNeighborhood } from '@/lib/hooks/useNeighborhood';
 import { useFriends } from '@/lib/hooks/useFriends';
 import { useDashboardData } from '@/lib/hooks/useDashboardData';
 import { fetchHolidays } from '@/lib/api/holidays';
+import type { PublicHoliday } from '@/lib/api/schemas';
 import { fetchWeather } from '@/lib/api/weather';
-import type { WeatherResponse } from '@/lib/api/schemas';
-import { DashboardGrid, type DashboardGridProps } from '@/components/dashboard/DashboardGrid';
+import { DashboardGrid } from '@/components/dashboard/DashboardGrid';
 import { Button } from '@/components/ui/Button';
 import { haptic } from '@/lib/haptics';
 import { shareOrCopy } from '@/lib/share';
 import type { HolidayData, Neighborhood, FriendNeighborhood } from '@/types';
+import { RefreshCw, Share2, Settings as SettingsIcon, MapPin, Loader2 } from 'lucide-react';
+import type { DashboardGridProps } from '@/components/dashboard/DashboardGrid';
 
-/**
- * PublicHoliday[] + 오늘 날짜 → HolidayData 빌드.
- * - 오늘이 공휴일이면 isHoliday=true, holidayName 세팅, daysUntilNext=0
- * - 아니면 다음 공휴일 D-day 계산 (이미 지난 공휴일은 건너뜀)
- */
-function buildHolidayData(hols: Awaited<ReturnType<typeof fetchHolidays>>, now: Date): HolidayData {
+function buildHolidayData(hols: PublicHoliday[], now: Date): HolidayData {
   const today = now.toISOString().slice(0, 10);
   const found = hols.find((h) => h.date === today);
   const dow = now.getDay();
   const isWeekday = dow >= 1 && dow <= 5;
-
   let daysUntilNext = 0;
   let nextName: string | null = null;
   if (!found) {
@@ -36,7 +32,6 @@ function buildHolidayData(hols: Awaited<ReturnType<typeof fetchHolidays>>, now: 
       }
     }
   }
-
   return {
     isHoliday: !!found,
     isWeekday,
@@ -60,23 +55,18 @@ export function HomeContent() {
   });
   const [friendWeather, setFriendWeather] = useState<DashboardGridProps['friends']>([]);
 
-  // 첫 실행: 동네 미설정이면 온보딩으로 리다이렉트
   useEffect(() => {
     if (!nbLoading && !neighborhood) router.push('/onboarding');
   }, [nbLoading, neighborhood, router]);
 
-  // 공휴일 — 올해 + 내년 합쳐서 fetch (연말 경계 대비)
   useEffect(() => {
     const now = new Date();
     const year = now.getFullYear();
     Promise.all([fetchHolidays(year), fetchHolidays(year + 1)])
       .then(([a, b]) => buildHolidayData([...a, ...b], now))
-      .catch(() => {
-        /* silent — 공휴일 API 실패해도 대시보드는 동작 */
-      });
+      .catch(() => {});
   }, []);
 
-  // 친구 동네 날씨 — CompareCard 용
   useEffect(() => {
     if (!friends.length) {
       setFriendWeather([]);
@@ -84,18 +74,22 @@ export function HomeContent() {
     }
     Promise.all(
       friends.map(async (f): Promise<DashboardGridProps['friends'][number]> => {
-        const weather: WeatherResponse = await fetchWeather(f.lat, f.lon);
+        const weather = await fetchWeather(f.lat, f.lon);
         const friend: FriendNeighborhood = { ...f, addedAt: new Date().toISOString() };
-        // Domain 매핑 — API 응답을 카드 컴포넌트가 기대하는 WeatherData 로 캐스팅.
-        // (현재 구조: hourly.time/temperature_2m 은 양쪽 모두 존재)
         return { friend, weather: weather as unknown as DashboardGridProps['friends'][number]['weather'] };
       }),
-    ).then(setFriendWeather).catch(() => {
-      /* silent */
-    });
+    ).then(setFriendWeather).catch(() => {});
   }, [friends]);
 
-  if (nbLoading || !neighborhood) return <div className="text-tds-grey-500">위치 확인 중…</div>;
+  if (nbLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-tds-grey-500">
+        <Loader2 size={32} strokeWidth={2} className="animate-spin mb-3 text-tds-blue" />
+        <span className="text-tds-st2">동네를 찾는 중…</span>
+      </div>
+    );
+  }
+  if (!neighborhood) return null;
 
   const onShare = async () => {
     haptic('tap');
@@ -107,19 +101,34 @@ export function HomeContent() {
     haptic(result === 'shared' ? 'success' : result === 'copied' ? 'tap' : 'error');
   };
 
-  // useDashboardData 의 raw API 응답을 DashboardGrid 의 도메인 타입으로 캐스팅.
-  // (cards 컴포넌트는 hourly/current 의 핵심 필드만 사용 → 런타임 호환)
   const gridData: DashboardGridProps['data'] = data
     ? (data as unknown as DashboardGridProps['data'])
     : null;
 
   return (
     <>
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-tds-st2 text-tds-grey-700">📍 {neighborhood.name}</span>
-        <div className="flex gap-2">
-          <Button variant="weak" onClick={() => { haptic('tap'); refresh(); }}>새로고침</Button>
-          <Button variant="primary" onClick={onShare}>공유</Button>
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-1.5 text-tds-st2 text-tds-grey-700 font-medium">
+          <MapPin size={14} strokeWidth={2} className="text-tds-blue" />
+          {neighborhood.name}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="weak"
+            size="sm"
+            onClick={() => {
+              haptic('tap');
+              refresh();
+            }}
+            aria-label="새로고침"
+          >
+            <RefreshCw size={14} strokeWidth={2} />
+            새로고침
+          </Button>
+          <Button variant="primary" size="sm" onClick={onShare} aria-label="공유">
+            <Share2 size={14} strokeWidth={2} />
+            공유
+          </Button>
         </div>
       </div>
       <DashboardGrid
@@ -129,8 +138,11 @@ export function HomeContent() {
         holiday={holiday}
         friends={friendWeather}
       />
-      <div className="mt-4 flex justify-center">
-        <Button variant="ghost" onClick={() => router.push('/settings')}>설정</Button>
+      <div className="mt-6 flex justify-center">
+        <Button variant="ghost" onClick={() => router.push('/settings')}>
+          <SettingsIcon size={14} strokeWidth={2} />
+          설정
+        </Button>
       </div>
     </>
   );

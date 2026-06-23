@@ -9,6 +9,7 @@ import { searchAddress } from '@/lib/api/geocoding';
 import { storage } from '@/lib/storage';
 import { haptic } from '@/lib/haptics';
 import type { Neighborhood } from '@/types';
+import { MapPin, Search, Loader2, AlertCircle } from 'lucide-react';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -17,7 +18,6 @@ export default function OnboardingPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 현재 위치를 자동 감지해서 저장 → 홈으로 이동
   const detectLocation = async () => {
     setBusy(true);
     setError(null);
@@ -25,10 +25,7 @@ export default function OnboardingPage() {
       const { lat, lon } = await getCurrentCoords();
       const rev = await reverseGeocode(lat, lon);
       const name =
-        rev?.address?.suburb ??
-        rev?.address?.neighbourhood ??
-        rev?.address?.city ??
-        '현재 위치';
+        rev?.address?.suburb ?? rev?.address?.neighbourhood ?? rev?.address?.city ?? '현재 위치';
       storage.set<Neighborhood>('neighborhood', { name, lat, lon });
       storage.set('onboardingDone', true);
       haptic('success');
@@ -44,6 +41,7 @@ export default function OnboardingPage() {
   const search = async () => {
     if (!query.trim()) return;
     setBusy(true);
+    setError(null);
     try {
       const r = await searchAddress(query);
       setResults(
@@ -55,12 +53,12 @@ export default function OnboardingPage() {
       );
     } catch {
       setResults([]);
+      setError('검색에 실패했어요. 다시 시도해 주세요.');
     } finally {
       setBusy(false);
     }
   };
 
-  // 검색 결과 선택 — 저장 후 홈으로 이동
   const pick = (n: { name: string; lat: number; lon: number }) => {
     storage.set<Neighborhood>('neighborhood', n);
     storage.set('onboardingDone', true);
@@ -69,44 +67,86 @@ export default function OnboardingPage() {
   };
 
   return (
-    <main className="mx-auto max-w-screen-sm p-4">
-      <h1 className="text-tds-t2 font-bold mb-4">우리 동네 설정</h1>
+    <main id="main" className="mx-auto max-w-screen-md px-4 py-5 sm:py-8 min-h-[100dvh]">
+      <header className="mb-6">
+        <h1 className="text-tds-t1 font-bold text-tds-grey-900 tracking-tight">우리 동네 설정</h1>
+        <p className="text-tds-st2 text-tds-grey-500 mt-1">자동 인식 또는 도시명으로 검색해 보세요</p>
+      </header>
 
-      <Card className="mb-4">
-        <h2 className="text-tds-st1 font-medium mb-2">📍 자동 인식</h2>
-        <p className="text-tds-st3 text-tds-grey-500 mb-3">
-          위치 권한을 허용하면 동네를 자동으로 찾아드려요.
+      <Card className="mb-4 animate-stagger animate-stagger-1" padding="lg">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-9 h-9 rounded-tds-md bg-tds-blue/10 flex items-center justify-center text-tds-blue">
+            <MapPin size={18} strokeWidth={2} />
+          </div>
+          <h2 className="text-tds-st1 font-semibold text-tds-grey-900 tracking-tight">자동 인식</h2>
+        </div>
+        <p className="text-tds-st3 text-tds-grey-500 mb-4 leading-relaxed">
+          위치 권한을 허용하면 현재 동네를 자동으로 찾아드려요. 거부해도 수동 검색으로 진행할 수 있어요.
         </p>
         <Button onClick={detectLocation} disabled={busy}>
-          {busy ? '확인 중…' : '내 위치로 설정'}
+          {busy ? (
+            <>
+              <Loader2 size={14} strokeWidth={2} className="animate-spin" />
+              확인 중…
+            </>
+          ) : (
+            <>
+              <MapPin size={14} strokeWidth={2} />
+              내 위치로 설정
+            </>
+          )}
         </Button>
-        {error && <p className="mt-2 text-tds-st3 text-tds-red">{error}</p>}
+        {error && (
+          <p className="mt-3 text-tds-st3 text-tds-red flex items-start gap-1.5">
+            <AlertCircle size={14} strokeWidth={2} className="mt-0.5 flex-shrink-0" />
+            <span>{error}</span>
+          </p>
+        )}
       </Card>
 
-      <Card>
-        <h2 className="text-tds-st1 font-medium mb-2">🔍 수동 검색</h2>
-        <div className="flex gap-2 mb-3">
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && search()}
-            placeholder="도시명 입력 (예: Seoul, Tokyo)"
-            className="flex-1 px-3 py-2 rounded-tds-md border border-tds-grey-200 bg-tds-bg text-tds-st2"
-          />
-          <Button variant="weak" onClick={search} disabled={busy}>검색</Button>
+      <Card className="animate-stagger animate-stagger-2" padding="lg">
+        <div className="flex items-center gap-2 mb-3">
+          <div className="w-9 h-9 rounded-tds-md bg-tds-purple/10 flex items-center justify-center text-tds-purple">
+            <Search size={18} strokeWidth={2} />
+          </div>
+          <h2 className="text-tds-st1 font-semibold text-tds-grey-900 tracking-tight">수동 검색</h2>
         </div>
-        <ul className="space-y-2">
-          {results.map((r, i) => (
-            <li key={i}>
-              <button
-                onClick={() => pick(r)}
-                className="w-full text-left p-2 rounded-tds-sm hover:bg-tds-grey-100"
-              >
-                {r.name}
-              </button>
-            </li>
-          ))}
-        </ul>
+        <div className="flex gap-2 mb-3">
+          <div className="relative flex-1">
+            <Search
+              size={14}
+              strokeWidth={2}
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-tds-grey-400 pointer-events-none"
+            />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && search()}
+              placeholder="예: 강남구, 홍대, 해운대, Seoul"
+              className="w-full pl-9 pr-3 py-2.5 rounded-tds-md border border-tds-grey-200 bg-tds-bg text-tds-st2 text-tds-grey-900 placeholder:text-tds-grey-400 focus:border-tds-blue focus:outline-none transition-colors"
+            />
+          </div>
+          <Button variant="weak" onClick={search} disabled={busy}>
+            검색
+          </Button>
+        </div>
+        {results.length > 0 && (
+          <ul className="flex flex-col gap-1 animate-stagger animate-stagger-3">
+            {results.map((r, i) => (
+              <li key={i}>
+                <button
+                  onClick={() => pick(r)}
+                  className="w-full text-left px-3 py-2.5 rounded-tds-md text-tds-st2 text-tds-grey-900 hover:bg-tds-blue-light active:scale-[0.99] transition-all duration-200"
+                >
+                  {r.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {!busy && results.length === 0 && query && (
+          <p className="text-tds-st3 text-tds-grey-500 text-center py-4">검색 결과가 없어요</p>
+        )}
       </Card>
     </main>
   );

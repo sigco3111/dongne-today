@@ -7,37 +7,20 @@ import { HolidayCard } from '@/components/cards/HolidayCard';
 import { CompareCard, type CompareEntry } from '@/components/cards/CompareCard';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { decideCharacter } from '@/utils/characterEngine';
-import type {
-  DashboardData,
-  HolidayData,
-  Neighborhood,
-  WeatherData,
-  AirQualityData,
-  PrecipitationData,
-} from '@/types';
+import type { DashboardData, HolidayData, Neighborhood, WeatherData, FriendNeighborhood } from '@/types';
 
 export interface DashboardGridProps {
   neighborhood: Neighborhood;
   isLoading: boolean;
-  /** weather/airQuality/precipitation은 한 묶음 (날씨 fetch 결과), holiday는 별도 fetch */
   data: {
     weather: WeatherData;
-    airQuality: AirQualityData;
-    precipitation: PrecipitationData;
+    airQuality: DashboardData['airQuality'];
+    precipitation: DashboardData['precipitation'];
   } | null;
   holiday: HolidayData;
   friends: CompareEntry[];
 }
 
-/**
- * 대시보드 2x3 그리드 (모바일 기준)
- * - row 1: CharacterReport (full-width)
- * - row 2: Weather | AirQuality
- * - row 3: Precipitation | Holiday
- * - row 4: CompareCard (full-width)
- *
- * 로딩 중에는 5개의 Skeleton placeholder 표시
- */
 export function DashboardGrid({
   neighborhood,
   isLoading,
@@ -47,22 +30,23 @@ export function DashboardGrid({
 }: DashboardGridProps) {
   if (isLoading || !data) {
     return (
-      <div className="grid grid-cols-2 gap-3">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <Skeleton key={i} className="h-32" />
-        ))}
+      <div className="flex flex-col gap-3">
+        <Skeleton className="h-28 w-full" />
+        <div className="grid grid-cols-2 gap-3">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-32 w-full" />
+          ))}
+        </div>
+        <Skeleton className="h-40 w-full" />
       </div>
     );
   }
-
-  // DashboardData.character 필드도 채워야 함 (캐시 저장 시 필요)
   const character = decideCharacter({
     weather: data.weather,
     airQuality: data.airQuality,
     precipitation: data.precipitation,
     holiday,
   });
-
   const dashboardData: DashboardData = {
     weather: data.weather,
     airQuality: data.airQuality,
@@ -70,19 +54,23 @@ export function DashboardGrid({
     holiday,
     neighborhood,
     character,
-    friendsWeather: friends.map((f) => ({ friend: f.friend, weather: f.weather })),
+    friendsWeather: friends.map((f) => ({
+      friend: f.friend,
+      weather: f.weather,
+    })),
     fetchedAt: new Date().toISOString(),
   };
-
   return (
-    <div className="grid grid-cols-2 gap-3">
+    <div className="flex flex-col gap-3">
       <div className="col-span-full">
-        <CharacterReport data={dashboardData} />
+        <CharacterReport data={dashboardData} neighborhoodName={neighborhood.name} />
       </div>
-      <WeatherCard data={data.weather} />
-      <AirQualityCard data={data.airQuality} />
-      <PrecipitationCard data={data.precipitation} />
-      <HolidayCard data={holiday} />
+      <div className="grid grid-cols-2 gap-3">
+        <WeatherCard data={data.weather} />
+        <AirQualityCard data={data.airQuality} />
+        <PrecipitationCard data={data.precipitation} />
+        <HolidayCard data={holiday} />
+      </div>
       <div className="col-span-full">
         <CompareCard my={data.weather} friends={friends} />
       </div>
