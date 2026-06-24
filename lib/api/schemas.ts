@@ -1,20 +1,48 @@
 import { z } from 'zod';
 
+/**
+ * Open-Meteo 통합 Weather 응답 스키마.
+ * current + hourly + daily 모두 포함 — 6종 데이터 카드(Weather/UV/Sun/Weekly/Precipitation/Feels)를
+ * 단일 fetch로 처리하기 위함. forecast_days=7로 호출.
+ */
 export const WeatherResponseSchema = z.object({
   current: z.object({
     time: z.string(),
     temperature_2m: z.number(),
     weather_code: z.number().int(),
+    apparent_temperature: z.number(),
+    wind_speed_10m: z.number(),
+    wind_direction_10m: z.number(),
+    relative_humidity_2m: z.number(),
+    uv_index: z.number(),
+    uv_index_clear_sky: z.number(),
   }),
   hourly: z.object({
     time: z.array(z.string()),
     temperature_2m: z.array(z.number().nullable()),
     precipitation_probability: z.array(z.number().nullable()),
+    apparent_temperature: z.array(z.number().nullable()),
+    wind_speed_10m: z.array(z.number().nullable()),
+    uv_index: z.array(z.number().nullable()),
+    uv_index_clear_sky: z.array(z.number().nullable()),
+  }),
+  daily: z.object({
+    time: z.array(z.string()),
+    sunrise: z.array(z.string()),
+    sunset: z.array(z.string()),
+    daylight_duration: z.array(z.number().nullable()),
+    weather_code: z.array(z.number().int()),
+    temperature_2m_max: z.array(z.number().nullable()),
+    temperature_2m_min: z.array(z.number().nullable()),
+    precipitation_sum: z.array(z.number().nullable()),
+    precipitation_probability_max: z.array(z.number().nullable()),
+    uv_index_max: z.array(z.number().nullable()),
   }),
 });
 
 export const AirQualityResponseSchema = z.object({
   current: z.object({
+    time: z.string(),
     pm10: z.number(),
     pm2_5: z.number(),
     ozone: z.number(),

@@ -72,5 +72,14 @@ Thumbs.db
 # Work logs (세션별 작업 메모는 추적하지만 임시 파일은 제외)
 docs/WORK_LOG.local.md
 
+# Ultrawork session notepads (로컬 작업 로그, 커밋 금지)
+claudedocs/notepad*.md
+
+# 도구/워크플로우 가이드 (이전 세션 잔재, 프로젝트와 무관)
+claudedocs/gajae-code-guide.md
+
 # AI agent workspace metadata (OhMyOpenCode)
 .omo/
+
+# gajae-code agent workspace (session-local cache)
+.gjc/

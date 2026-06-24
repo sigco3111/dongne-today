@@ -90,6 +90,39 @@
   }
 }
 
+/* 수동 테마 — 사용자가 localStorage에서 'light'|'dark' 선택 시 html에 class 추가.
+   prefers-color-scheme보다 우선. */
+:root[data-theme='light'] {
+  color-scheme: light;
+  --color-tds-bg: #FAFAF7;
+  --color-tds-fg: #191F1B;
+  --color-tds-surface: #FFFFFF;
+  --color-tds-surface-elevated: #FFFFFF;
+  --color-tds-grey-50: #FAFAF7;
+  --color-tds-grey-100: #F2F4F0;
+  --color-tds-grey-200: #E5E8E3;
+  --color-tds-grey-500: #8B9590;
+  --color-tds-grey-700: #4E5955;
+  --color-tds-grey-900: #191F1B;
+  --shadow-tds-md: 0 2px 8px 0 rgb(25 31 27 / 0.06), 0 1px 2px 0 rgb(25 31 27 / 0.04);
+  --shadow-tds-lg: 0 8px 24px 0 rgb(25 31 27 / 0.08), 0 2px 4px 0 rgb(25 31 27 / 0.04);
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --color-tds-bg: #161A17;
+  --color-tds-fg: #F4F5F2;
+  --color-tds-surface: #1E2220;
+  --color-tds-surface-elevated: #252A28;
+  --color-tds-grey-50: #1E2220;
+  --color-tds-grey-100: #252A28;
+  --color-tds-grey-200: #2E3431;
+  --color-tds-grey-500: #6B7570;
+  --color-tds-grey-700: #B0B8B1;
+  --color-tds-grey-900: #F4F5F2;
+  --shadow-tds-md: 0 2px 8px 0 rgb(0 0 0 / 0.4);
+  --shadow-tds-lg: 0 8px 24px 0 rgb(0 0 0 / 0.5);
+}
+
 /* ============================================
    Base layer
    ============================================ */

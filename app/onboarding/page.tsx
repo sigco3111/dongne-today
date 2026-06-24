@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDebounce } from '@/lib/hooks/useDebounce';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { getCurrentCoords } from '@/lib/location';
@@ -17,6 +18,36 @@ export default function OnboardingPage() {
   const [results, setResults] = useState<Array<{ name: string; lat: number; lon: number }>>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const debouncedQuery = useDebounce(query, 350);
+
+  useEffect(() => {
+    const q = debouncedQuery.trim();
+    if (!q || q.length < 2) {
+      setResults([]);
+      return;
+    }
+    let cancelled = false;
+    setBusy(true);
+    setError(null);
+    searchAddress(q)
+      .then((r) => {
+        if (cancelled) return;
+        setResults(
+          r.map((g) => {
+            const parts = (g.displayName ?? g.name).split(',').map((s) => s.trim()).filter(Boolean);
+            const short = parts.length <= 2 ? (g.displayName ?? g.name) : parts.slice(0, 2).join(', ');
+            return { name: short, lat: g.lat, lon: g.lon };
+          }),
+        );
+      })
+      .catch(() => {
+        if (!cancelled) setResults([]);
+      })
+      .finally(() => {
+        if (!cancelled) setBusy(false);
+      });
+    return () => { cancelled = true; };
+  }, [debouncedQuery]);
 
   const detectLocation = async () => {
     setBusy(true);
@@ -33,27 +64,6 @@ export default function OnboardingPage() {
     } catch (e) {
       setError(e instanceof Error ? e.message : '위치를 가져올 수 없습니다.');
       haptic('error');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const search = async () => {
-    if (!query.trim()) return;
-    setBusy(true);
-    setError(null);
-    try {
-      const r = await searchAddress(query);
-      setResults(
-        r.map((g) => {
-          const parts = (g.displayName ?? g.name).split(',').map((s) => s.trim()).filter(Boolean);
-          const short = parts.length <= 2 ? (g.displayName ?? g.name) : parts.slice(0, 2).join(', ');
-          return { name: short, lat: g.lat, lon: g.lon };
-        }),
-      );
-    } catch {
-      setResults([]);
-      setError('검색에 실패했어요. 다시 시도해 주세요.');
     } finally {
       setBusy(false);
     }
@@ -111,24 +121,26 @@ export default function OnboardingPage() {
           </div>
           <h2 className="text-tds-st1 font-semibold text-tds-grey-900 tracking-tight">수동 검색</h2>
         </div>
-        <div className="flex gap-2 mb-3">
-          <div className="relative flex-1">
-            <Search
+        <div className="relative mb-3">
+          <Search
+            size={14}
+            strokeWidth={2}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-tds-grey-400 pointer-events-none"
+          />
+          <input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="예: 강남구, 홍대, 해운대, Seoul (자동완성)"
+            className="w-full pl-9 pr-3 py-2.5 rounded-tds-md border border-tds-grey-200 bg-tds-bg text-tds-st2 text-tds-grey-900 placeholder:text-tds-grey-400 focus:border-tds-blue focus:outline-none transition-colors"
+            aria-label="동네 검색"
+          />
+          {busy && (
+            <Loader2
               size={14}
               strokeWidth={2}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-tds-grey-400 pointer-events-none"
+              className="absolute right-3 top-1/2 -translate-y-1/2 animate-spin text-tds-grey-400"
             />
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && search()}
-              placeholder="예: 강남구, 홍대, 해운대, Seoul"
-              className="w-full pl-9 pr-3 py-2.5 rounded-tds-md border border-tds-grey-200 bg-tds-bg text-tds-st2 text-tds-grey-900 placeholder:text-tds-grey-400 focus:border-tds-blue focus:outline-none transition-colors"
-            />
-          </div>
-          <Button variant="weak" onClick={search} disabled={busy}>
-            검색
-          </Button>
+          )}
         </div>
         {results.length > 0 && (
           <ul className="flex flex-col gap-1 animate-stagger animate-stagger-3">
@@ -144,7 +156,7 @@ export default function OnboardingPage() {
             ))}
           </ul>
         )}
-        {!busy && results.length === 0 && query && (
+        {!busy && results.length === 0 && debouncedQuery.trim().length >= 2 && (
           <p className="text-tds-st3 text-tds-grey-500 text-center py-4">검색 결과가 없어요</p>
         )}
       </Card>

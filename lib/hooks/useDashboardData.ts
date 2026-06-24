@@ -4,16 +4,15 @@ import { fetchWeather } from '@/lib/api/weather';
 import { fetchAirQuality } from '@/lib/api/airQuality';
 import { fetchPrecipitation } from '@/lib/api/precipitation';
 import type {
-  WeatherResponse,
-  AirQualityResponse,
-  PrecipitationResponse,
-} from '@/lib/api/schemas';
-import type { Neighborhood } from '@/types';
+  WeatherData,
+  AirQualityData,
+  PrecipitationData,
+} from '@/types';
 
 export interface DashboardData {
-  weather: WeatherResponse;
-  airQuality: AirQualityResponse;
-  precipitation: PrecipitationResponse;
+  weather: WeatherData;
+  airQuality: AirQualityData;
+  precipitation: PrecipitationData;
 }
 
 async function fetcher([, lat, lon]: [string, number, number]): Promise<DashboardData> {
@@ -30,12 +29,14 @@ async function fetcher([, lat, lon]: [string, number, number]): Promise<Dashboar
  * - 키: ['dashboard', lat, lon] — 동네 변경 시 자동 refetch.
  * - refreshInterval: 30분 — 외부 API 갱신 주기와 맞춤.
  * - keepPreviousData: 동네 전환 시 깜빡임 방지.
+ *
+ * weather 응답은 통합 (current + hourly + daily 7일) — 단일 fetch로 6종 카드 지원.
  */
-export function useDashboardData(neighborhood: Neighborhood | null) {
+export function useDashboardData(neighborhood: { lat: number; lon: number } | null) {
   const key = neighborhood
     ? (['dashboard', neighborhood.lat, neighborhood.lon] as const)
     : null;
-  const { data, error, isLoading, mutate } = useSWR(key, fetcher, {
+  const { data, error, isLoading, mutate } = useSWR<DashboardData, Error>(key, fetcher, {
     refreshInterval: 30 * 60 * 1000,
     dedupingInterval: 30 * 60 * 1000,
     revalidateOnFocus: true,

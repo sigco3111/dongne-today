@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useNeighborhood } from '@/lib/hooks/useNeighborhood';
 import { useFriends } from '@/lib/hooks/useFriends';
@@ -11,9 +11,13 @@ import { DashboardGrid } from '@/components/dashboard/DashboardGrid';
 import { Button } from '@/components/ui/Button';
 import { haptic } from '@/lib/haptics';
 import { shareOrCopy } from '@/lib/share';
-import type { HolidayData, Neighborhood, FriendNeighborhood } from '@/types';
-import { RefreshCw, Share2, Settings as SettingsIcon, MapPin, Loader2 } from 'lucide-react';
+import { storage } from '@/lib/storage';
+import { notify, shouldNotify, markNotified } from '@/lib/notify';
+import { exportNodeToPng, downloadDataUrl } from '@/lib/exportImage';
+import type { HolidayData, Neighborhood, FriendNeighborhood, CharacterHistoryEntry } from '@/types';
+import { RefreshCw, Share2, Settings as SettingsIcon, MapPin, Loader2, Download } from 'lucide-react';
 import type { DashboardGridProps } from '@/components/dashboard/DashboardGrid';
+import { decideAndSave, getHistoryForRange } from '@/utils/characterHistory';
 
 function buildHolidayData(hols: PublicHoliday[], now: Date): HolidayData {
   const today = now.toISOString().slice(0, 10);
@@ -54,6 +58,7 @@ export function HomeContent() {
     fetchedAt: new Date().toISOString(),
   });
   const [friendWeather, setFriendWeather] = useState<DashboardGridProps['friends']>([]);
+  const [historyTick, setHistoryTick] = useState(0);
 
   useEffect(() => {
     if (!nbLoading && !neighborhood) router.push('/onboarding');
@@ -76,10 +81,77 @@ export function HomeContent() {
       friends.map(async (f): Promise<DashboardGridProps['friends'][number]> => {
         const weather = await fetchWeather(f.lat, f.lon);
         const friend: FriendNeighborhood = { ...f, addedAt: new Date().toISOString() };
-        return { friend, weather: weather as unknown as DashboardGridProps['friends'][number]['weather'] };
+        return { friend, weather };
       }),
     ).then(setFriendWeather).catch(() => {});
   }, [friends]);
+
+  useEffect(() => {
+    if (!data) return;
+    try {
+      const report = decideAndSave({
+        weather: data.weather,
+        airQuality: data.airQuality,
+        precipitation: data.precipitation,
+        holiday,
+      });
+      if (typeof window !== 'undefined') {
+        console.log('[dongne] decideAndSave:', report.kind, report.matchedRule);
+      }
+      setHistoryTick((t) => t + 1);
+
+      if (typeof window !== 'undefined') {
+        const notifyOn = storage.get<boolean>('notifyEnabled');
+        const pm25 = data.airQuality.current.pm2_5;
+        const todayMax = data.weather.daily.temperature_2m_max[0];
+        const todayMin = data.weather.daily.temperature_2m_min[0];
+        if (notifyOn) {
+          if (pm25 >= 75 && shouldNotify('pm25_bad')) {
+            notify({
+              title: '미세먼지 나쁨',
+              body: `${neighborhood?.name ?? '우리 동네'} 미세먼지 ${Math.round(pm25)}μg/m³ — 마스크 챙기세요.`,
+              level: 'warning',
+              tag: 'pm25_bad',
+            });
+            markNotified('pm25_bad');
+          } else if (todayMax != null && todayMax >= 33 && shouldNotify('heat_wave')) {
+            notify({
+              title: '폭염 경보',
+              body: `오늘 최고 ${todayMax.toFixed(0)}°C — 물 자주 마시고 그늘에서 쉬어요.`,
+              level: 'danger',
+              tag: 'heat_wave',
+            });
+            markNotified('heat_wave');
+          } else if (todayMin != null && todayMin <= -5 && shouldNotify('cold_wave')) {
+            notify({
+              title: '한파 경보',
+              body: `오늘 최저 ${todayMin.toFixed(0)}°C — 롱패딩 필수.`,
+              level: 'danger',
+              tag: 'cold_wave',
+            });
+            markNotified('cold_wave');
+          }
+        }
+      }
+    } catch (err) {
+      if (typeof window !== 'undefined') {
+        console.error('[dongne] decideAndSave failed:', err);
+      }
+    }
+  }, [data, holiday, neighborhood?.name]);
+
+  const historyItems = useMemo(
+    () => getHistoryForRange(7).map((item): { date: string; entry: CharacterHistoryEntry | null } => ({
+      date: item.date,
+      entry: item.entry ? {
+        date: item.entry.date,
+        kind: item.entry.kind,
+        emoji: item.entry.emoji,
+        line: item.entry.line,
+      } : null,
+    })),
+    [historyTick],
+  );
 
   if (nbLoading) {
     return (
@@ -101,9 +173,23 @@ export function HomeContent() {
     haptic(result === 'shared' ? 'success' : result === 'copied' ? 'tap' : 'error');
   };
 
-  const gridData: DashboardGridProps['data'] = data
-    ? (data as unknown as DashboardGridProps['data'])
-    : null;
+  const onExport = async () => {
+    haptic('tap');
+    const root = document.getElementById('dashboard-root');
+    if (!root) {
+      haptic('error');
+      return;
+    }
+    const result = await exportNodeToPng(root, {
+      fileName: `dongne-today-${neighborhood.name}-${new Date().toISOString().slice(0, 10)}.png`,
+    });
+    if (!result) {
+      haptic('error');
+      return;
+    }
+    downloadDataUrl(result.dataUrl, result.fileName);
+    haptic('success');
+  };
 
   return (
     <>
@@ -131,18 +217,25 @@ export function HomeContent() {
           </Button>
         </div>
       </div>
-      <DashboardGrid
-        neighborhood={neighborhood as Neighborhood}
-        isLoading={isLoading}
-        data={gridData}
-        holiday={holiday}
-        friends={friendWeather}
-      />
-      <div className="mt-6 flex justify-center">
-        <Button variant="ghost" onClick={() => router.push('/settings')}>
-          <SettingsIcon size={14} strokeWidth={2} />
-          설정
-        </Button>
+      <div id="dashboard-root" className="contents">
+        <DashboardGrid
+          neighborhood={neighborhood as Neighborhood}
+          isLoading={isLoading}
+          data={data ?? null}
+          holiday={holiday}
+          friends={friendWeather}
+          historyItems={historyItems}
+        />
+        <div className="mt-6 flex justify-center gap-2">
+          <Button variant="ghost" onClick={onExport} aria-label="대시보드 PNG로 저장">
+            <Download size={14} strokeWidth={2} />
+            PNG로 저장
+          </Button>
+          <Button variant="ghost" onClick={() => router.push('/settings')}>
+            <SettingsIcon size={14} strokeWidth={2} />
+            설정
+          </Button>
+        </div>
       </div>
     </>
   );
