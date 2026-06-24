@@ -9,6 +9,7 @@
 ![typescript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript)
 ![tests](https://img.shields.io/badge/tests-102_passing-03B26C?style=flat-square)
 ![dark-mode](https://img.shields.io/badge/dark-default-191F1B?style=flat-square)
+[![live-demo](https://img.shields.io/badge/🚀_Live_Demo-dongne--today.vercel.app-000?style=flat-square&logo=vercel&logoColor=white)](https://dongne-today.vercel.app/)
 
 ![dashboard](./claudedocs/dark-mode-dashboard.png)
 
@@ -19,6 +20,9 @@
 ### 💡 한 줄 컨셉
 
 **"지금 우리 동네 공기·날씨·행사·친구 동네까지 — 한 화면에서 끝."**
+
+> 🚀 **[라이브 데모 보기 → dongne-today.vercel.app](https://dongne-today.vercel.app/)**
+> 모바일/데스크탑 모두 지원, 별도 설치 없이 바로 사용.
 
 미세먼지·강수·자외선·일출·일몰·공휴일까지 **12가지 데이터**를 인포그래픽 대시보드로 보여주고, 동네의 분위기는 **MBTI 캐릭터 한 줄 리포트**로 표현합니다. 친구 동네를 최대 5곳까지 등록해 가로 막대 비교도 가능.
 
@@ -83,6 +87,9 @@ yarn type-check     # tsc --noEmit (0 errors)
 ### 💡 One-line Concept
 
 **"Your neighborhood's today — air, weather, transit, friends — in one screen."**
+
+> 🚀 **[Live Demo → dongne-today.vercel.app](https://dongne-today.vercel.app/)**
+> Works on mobile & desktop, no install required.
 
 An infographic dashboard surfacing **12 data points** about your neighborhood (fine dust, precipitation, UV, sunrise/sunset, public holidays, weekly stats, friend comparisons) with a **MBTI-style character report** for personality. No backend. No API keys. Dark by default.
 
