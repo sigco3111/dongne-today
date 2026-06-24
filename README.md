@@ -3,13 +3,24 @@
 > 내 동네의 오늘을 12가지 데이터로 한눈에 — 친구 동네랑 비교까지.
 > 서버 비용 0원, API 키 0개, 다크모드 기본.
 
+<div align="center">
+
+### 🚀 **[Launch Live Demo →](https://dongne-today.vercel.app/)**
+
+[![Live](https://img.shields.io/badge/🌐_Live_Demo-dongne--today.vercel.app-FF4D4D?style=for-the-badge&logo=vercel&logoColor=white)](https://dongne-today.vercel.app/)
+
+**모바일/데스크탑 모두 지원 · 별도 설치 없이 브라우저에서 바로 · 다크모드 기본**
+
+</div>
+
+---
+
 ![status](https://img.shields.io/badge/status-active-03B26C?style=flat-square)
 ![next](https://img.shields.io/badge/Next.js-15.0-000?style=flat-square&logo=next.js)
 ![react](https://img.shields.io/badge/React-19-149ECA?style=flat-square&logo=react)
 ![typescript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=flat-square&logo=typescript)
 ![tests](https://img.shields.io/badge/tests-102_passing-03B26C?style=flat-square)
 ![dark-mode](https://img.shields.io/badge/dark-default-191F1B?style=flat-square)
-[![live-demo](https://img.shields.io/badge/🚀_Live_Demo-dongne--today.vercel.app-000?style=flat-square&logo=vercel&logoColor=white)](https://dongne-today.vercel.app/)
 
 ![dashboard](./claudedocs/dark-mode-dashboard.png)
 
